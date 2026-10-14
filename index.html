@@ -32,8 +32,8 @@ button:focus-visible,input:focus-visible+label{outline:2px solid var(--amber);ou
 [hidden]{display:none!important}
 
 /* ---------- touch zones & floating sticks ---------- */
-.zone{position:absolute;top:0;bottom:0;width:50%;z-index:1;touch-action:none}
-#zoneL{left:0}#zoneR{right:0}
+.zone{position:absolute;top:0;bottom:0;width:36%;z-index:1;touch-action:none}
+#zoneL{left:0}#zoneR{right:0}#zoneC{left:36%;width:28%}
 body.swap #zoneL{left:auto;right:0}body.swap #zoneR{right:auto;left:0}
 .stk,.ghost{position:absolute;left:0;top:0;width:calc(var(--s)*9);height:calc(var(--s)*9);margin:calc(var(--s)*-4.5) 0 0 calc(var(--s)*-4.5);border-radius:50%;pointer-events:none;z-index:2}
 .stk{border:2px solid rgba(214,207,166,.55);background:radial-gradient(circle,rgba(214,207,166,.05),rgba(214,207,166,.16));opacity:0;transition:opacity .12s}
@@ -44,6 +44,9 @@ body.swap #zoneL{left:auto;right:0}body.swap #zoneR{right:auto;left:0}
 .ghost{border:2px dashed rgba(214,207,166,.28);display:none;opacity:.8}
 .ghost span{position:absolute;left:50%;bottom:-1.7em;transform:translateX(-50%);font:500 calc(var(--s)*.72) var(--f-body);color:rgba(214,207,166,.6);white-space:nowrap}
 body.touch.fresh .ghost{display:block}
+#hitov{position:absolute;inset:0;pointer-events:none;z-index:2;box-shadow:inset 0 0 90px 24px rgba(255,40,20,.75);opacity:0;transition:opacity .5s}
+#hitov.on{opacity:1;transition:none}
+#ghC{left:50%;top:62%;border-radius:18px;width:calc(var(--s)*13);height:calc(var(--s)*6);margin:calc(var(--s)*-3) 0 0 calc(var(--s)*-6.5)}
 #ghL{left:calc(14% );top:70%}#ghR{left:auto;right:calc(14% - var(--s)*9);top:70%}
 body.swap #ghL{left:auto;right:calc(14% - var(--s)*9)}body.swap #ghR{right:auto;left:14%}
 
@@ -176,9 +179,9 @@ body:not(.touch) #actions{opacity:.9}
 
 <div id="app">
   <div id="gl"></div>
-  <div id="nvgov" hidden></div>
-  <div id="zoneL" class="zone"></div><div id="zoneR" class="zone"></div>
-  <div class="ghost" id="ghL"><span>移動</span></div><div class="ghost" id="ghR"><span>旋回 / 昇降</span></div>
+  <div id="nvgov" hidden></div><div id="hitov"></div>
+  <div id="zoneL" class="zone"></div><div id="zoneC" class="zone"></div><div id="zoneR" class="zone"></div>
+  <div class="ghost" id="ghC"><span>視点：ドラッグ回転・ピンチ拡大・2回タップで戻す</span></div><div class="ghost" id="ghL"><span>移動</span></div><div class="ghost" id="ghR"><span>旋回 / 昇降</span></div>
   <div class="stk" id="stkL" data-t="移動"><i></i></div><div class="stk" id="stkR" data-t="旋回 / 昇降"><i></i></div>
   <div id="markers"></div>
   <div id="crosshair" hidden></div>
@@ -1003,7 +1006,7 @@ const S = {
   doorR:0, doorRT:0, doorL:0, doorLT:0,
   light:0, nvg:false, cam:0, tod:17.4, weather:'clear', time:0, score:0,
   troops:8, rappelCD:0, onGround:true, tq:0, agl:0, nz:1, maxG:1, shots:0, hits:0,
-  loadAcc:new THREE.Vector3(), serviceMsg:false, winch:0, hold:new THREE.Vector3(), holdOn:false
+  loadAcc:new THREE.Vector3(), serviceMsg:false, winch:0, hull:100, underFire:0, hold:new THREE.Vector3(), holdOn:false
 };
 const IN = {cx:0,cy:0,ped:0,climb:0,fire:false};
 const WEATHER = {
@@ -1252,7 +1255,7 @@ function updateTroops(dt){
 /* ===================== helicopter lifecycle ===================== */
 function resetHeli(){
   S.pos.set(HOME.x,groundY(HOME.x,HOME.z),HOME.z); S.vel.set(0,0,0);
-  S.yaw=0; S.pitch=0; S.roll=0; S.yawRate=0; S.rpm=0; S.fuel=100; S.coll=.5; S.troops=8; S.engineOut=false; S.crashed=false;
+  S.yaw=0; S.pitch=0; S.roll=0; S.yawRate=0; S.rpm=0; S.fuel=100; S.hull=100; S.underFire=0; S.coll=.5; S.troops=8; S.engineOut=false; S.crashed=false;
   S.doorR=S.doorRT=S.doorL=S.doorLT=0; S.onGround=true; S.rappelCD=0; S.time=0; S.nz=1; S.maxG=1; S.shots=0; S.hits=0; S.winch=0;
   S.light=(S.tod<5.8||S.tod>19.2)?1:0;
   heli.visible=true; crashSmoke=null; extraTurb.set(0,0,0);
@@ -1833,19 +1836,366 @@ const Ops={
   actOn(){ const h=HND[O.id]; return h.actOn?h.actOn():true; },
   panel(){ const h=HND[O.id]; return h.panel?h.panel():[]; },
   targetHit(tg){
-    tg.alive=false; S.score+=100; S.hits++;
+    if(tg.hp>1){ tg.hp--; tg.alert=true; tg.hit=true; if(tg.react>.4) tg.react=.4; spawnFx({pos:tg.c.clone(),vel:new THREE.Vector3(rnd(-2,2),rnd(1,3),rnd(-2,2)),s0:.7,s1:2,life:.25,color:0xffd070,op:1,add:true}); return; }
+    tg.alive=false; S.score+=tg.pts||100; S.hits++;
     spawnFx({pos:tg.c.clone(),vel:new THREE.Vector3(0,2,0),s0:2,s1:7,life:.5,color:0xffd070,op:1,add:true});
+    if(tg.kind&&typeof Foes!=='undefined') Foes.kill(tg);
     if(O.id==='range'&&S.hits>=targets.length) complete(clamp(S.hits/Math.max(S.shots,1)*3,0,1),[['命中率',Math.round(S.hits/Math.max(S.shots,1)*100)+' %']]);
   },
   onCrash(){ hoistDone(); },
   visuals(dt){
-    for(let i=0;i<targets.length;i++){ const t=targets[i]; if(!t.alive&&t.fall<1){ t.fall=Math.min(1,t.fall+dt*2.2); t.g.rotation.x=-t.fall*1.35; } }
+    for(let i=0;i<targets.length;i++){ const t=targets[i]; if(!t.alive&&t.fall<1&&!t.noFall){ t.fall=Math.min(1,t.fall+dt*2.2); t.g.rotation.x=-t.fall*1.35; } }
     if(mBeam.visible) mBeam.material.opacity=.2+.1*Math.sin(S.time*3);
     for(let i=0;i<smokers.length;i++){ const s=smokers[i]; s.t+=dt; if(s.t>.12){ s.t=0; spawnFx({pos:s.p.clone(),vel:new THREE.Vector3(wind.x*.5,rnd(5,8),wind.z*.5),s0:2,s1:14,life:7,color:s.c,op:.55,drag:.2}); } }
     if(crashSmoke){ crashSmoke.t+=dt; crashSmoke.e+=dt; if(crashSmoke.e>.07&&crashSmoke.t<40){ crashSmoke.e=0; spawnFx({pos:crashSmoke.p.clone(),vel:new THREE.Vector3(wind.x*.4+rnd(-1,1),rnd(5,9),wind.z*.4+rnd(-1,1)),s0:2.5,s1:18,life:6,color:0x222222,op:.6,drag:.2}); if(Math.random()<.35) spawnFx({pos:crashSmoke.p.clone(),vel:new THREE.Vector3(rnd(-1,1),rnd(2,4),rnd(-1,1)),s0:2,s1:5,life:.5,color:0xff7a2a,op:.9,add:true}); } }
     crowd.forEach(function(p,i){ p.position.y=SITE.SHELTER.y+Math.max(0,Math.sin(S.time*2+i*1.7))*.02; });
   }
 };
+/* ===================== combat: hostile forces, damage model, combat operations ===================== */
+const FM={
+  olive:new THREE.MeshStandardMaterial({color:0x4b5530,roughness:.85}),
+  olive2:new THREE.MeshStandardMaterial({color:0x363e24,roughness:.9}),
+  dark:new THREE.MeshStandardMaterial({color:0x202226,roughness:.9}),
+  grey:new THREE.MeshStandardMaterial({color:0x6a6e70,roughness:.7,metalness:.3}),
+  tan:new THREE.MeshStandardMaterial({color:0xb09c6a,roughness:.8}),
+  sand:new THREE.MeshStandardMaterial({color:0x9c8e68,roughness:.95}),
+  red:new THREE.MeshStandardMaterial({color:0x8a2a22,roughness:.7}),
+  white:new THREE.MeshStandardMaterial({color:0xe8e8e0,roughness:.7}),
+  wreck:new THREE.MeshStandardMaterial({color:0x17181a,roughness:1}),
+  lamp:new THREE.MeshBasicMaterial({color:0xffd98a})
+};
+function fbox(g,w,h,d,x,y,z,m){ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); o.castShadow=true; g.add(o); return o; }
+function fcyl(g,rt,rb,h,x,y,z,m,rx,rz,seg){ const geo=new THREE.CylinderGeometry(rt,rb,h,seg||12); if(rx) geo.rotateX(rx); if(rz) geo.rotateZ(rz); const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; g.add(o); return o; }
+function wheels(g,xs,zs,r){ xs.forEach(function(x){ zs.forEach(function(z){ fcyl(g,r,r,.42,x,r,z,FM.dark,0,Math.PI/2,10); }); }); }
+
+const FOE={
+  tank:{hp:8,r:3.6,hy:1.6,pts:250,big:2,fire:{rng:1000,det:1100,rate:.3,burst:1,pause:0,dmg:9,spread:.008,spd:300,heavy:1,vsConvoy:60}},
+  apc:{hp:5,r:3.2,hy:1.5,pts:150,big:1,fire:{rng:720,det:850,rate:7,burst:12,pause:2.2,dmg:.6,spread:.02,spd:430}},
+  truck:{hp:3,r:3.2,hy:1.8,pts:80,big:1},
+  tanker:{hp:3,r:3.2,hy:1.8,pts:120,big:3},
+  aa:{hp:5,r:2.4,hy:1.6,pts:200,big:1,fire:{rng:1000,det:1100,rate:10,burst:20,pause:2.4,dmg:.55,spread:.02,spd:520}},
+  mg:{hp:4,r:2.3,hy:1.2,pts:120,big:1,fire:{rng:750,det:850,rate:7,burst:12,pause:2.2,dmg:.5,spread:.022,spd:450}},
+  inf:{hp:1,r:1.3,hy:.95,pts:50,big:0,fire:{rng:450,det:550,rate:3,burst:4,pause:2.8,dmg:.35,spread:.026,spd:400}},
+  rpg:{hp:1,r:1.3,hy:.95,pts:100,big:1,fire:{rng:600,det:700,rate:.22,burst:1,pause:0,dmg:9,spread:.012,spd:150,heavy:1,vsConvoy:38}},
+  depot:{hp:9,r:4.8,hy:2,pts:250,big:3},
+  radar:{hp:5,r:3.4,hy:3.6,pts:200,big:1},
+  hq:{hp:14,r:6.5,hy:2.6,pts:400,big:3},
+  gen:{hp:4,r:2,hy:1,pts:150,big:2},
+  ftruck:{hp:100,r:3.2,hy:1.8,pts:0,big:0}
+};
+function buildModel(kind){
+  const g=new THREE.Group();
+  if(kind==='tank'){
+    fbox(g,3.2,1.1,6.2,0,1.0,0,FM.olive); fbox(g,.8,1.0,6.6,-1.75,.55,0,FM.dark); fbox(g,.8,1.0,6.6,1.75,.55,0,FM.dark);
+    fbox(g,2.5,.9,2.8,0,1.95,-.3,FM.olive); fcyl(g,.13,.13,4,0,2.0,2.6,FM.grey,Math.PI/2); fbox(g,.7,.5,.9,0,2.65,-.5,FM.olive2);
+  } else if(kind==='apc'){
+    fbox(g,2.6,1.3,5.4,0,1.2,0,FM.olive); fbox(g,2.2,.6,2.2,0,2.1,-.4,FM.olive2); fcyl(g,.07,.07,1.8,0,2.2,1.1,FM.dark,Math.PI/2); wheels(g,[-1.4,1.4],[-1.9,0,1.9],.62);
+  } else if(kind==='truck'||kind==='ftruck'||kind==='tanker'){
+    const f=kind==='ftruck', body=f?FM.tan:FM.olive, cab=f?FM.tan:FM.olive2;
+    fbox(g,2.4,1.9,1.9,0,1.6,2.35,cab); fbox(g,2.3,.45,5.2,0,.95,-.6,FM.dark);
+    if(kind==='tanker') fcyl(g,1.1,1.1,4.6,0,2.1,-.7,FM.red,Math.PI/2,0,14); else { fbox(g,2.5,1.8,4.4,0,2.05,-.7,body); if(f) fbox(g,1.2,.9,.06,1.26,2.1,-.7,FM.white); }
+    wheels(g,[-1.2,1.2],[2.3,-.2,-1.9],.58);
+  } else if(kind==='aa'){
+    for(let i=0;i<10;i++){ const a=i/10*6.283; fbox(g,1.2,.7,.7,Math.cos(a)*2.4,.35,Math.sin(a)*2.4,FM.sand).rotation.y=-a; }
+    fcyl(g,1.1,1.3,.5,0,.5,0,FM.olive2); fbox(g,1.7,1.2,.18,0,1.35,.9,FM.olive); fcyl(g,.07,.07,2.4,-.3,1.55,1.5,FM.dark,Math.PI/2-.55); fcyl(g,.07,.07,2.4,.3,1.55,1.5,FM.dark,Math.PI/2-.55);
+  } else if(kind==='mg'){
+    for(let i=0;i<9;i++){ const a=i/9*6.283; fbox(g,1.1,.7,.7,Math.cos(a)*2,.35+(i%2)*.25,Math.sin(a)*2,FM.sand).rotation.y=-a; }
+    fbox(g,.7,.5,.9,0,.6,0,FM.olive2); fcyl(g,.05,.05,1.6,0,.95,.9,FM.dark,Math.PI/2);
+  } else if(kind==='inf'||kind==='rpg'){
+    const p=makePerson(0x44482c,true); g.add(p); if(kind==='rpg') fcyl(g,.07,.07,1.3,.32,1.2,.2,FM.dark,Math.PI/2);
+  } else if(kind==='depot'){
+    fbox(g,7,3,5,0,1.5,0,FM.olive); const roof=fbox(g,7.5,.3,5.5,0,3.1,0,FM.olive2); roof.rotation.z=.04;
+    fbox(g,1.2,2.2,.15,0,1.1,2.55,FM.dark); for(let i=0;i<5;i++) fbox(g,1.2,.9,.9,-3+i*1.5,.45,4.2+(i%2)*.7,FM.tan);
+  } else if(kind==='radar'){
+    fbox(g,2.6,2.2,2.6,0,1.1,0,FM.grey); fcyl(g,.25,.25,6,0,4,0,FM.grey); const d=fcyl(g,2.6,2.6,.25,0,6.4,0,FM.white,Math.PI/2,0,20); d.rotation.x=Math.PI/2-.6; fbox(g,.1,.1,2.4,0,6.9,1.2,FM.dark);
+  } else if(kind==='hq'){
+    fbox(g,10,4,7,0,2,0,FM.sand); fbox(g,10.6,.4,7.6,0,4.2,0,FM.olive2); fcyl(g,.1,.1,9,3.5,8.5,-2,FM.dark);
+    for(let i=0;i<4;i++){ fbox(g,1.1,.9,.06,-3.4+i*2.3,2.4,3.53,FM.lamp); }
+    fbox(g,1.4,2.2,.1,0,1.1,3.55,FM.dark);
+  } else if(kind==='gen'){
+    fbox(g,2.2,1.4,1.5,0,.8,0,FM.olive); fcyl(g,.12,.12,1.4,.7,1.9,0,FM.dark); fbox(g,.5,.4,.06,-.6,1.0,.78,FM.lamp);
+  }
+  return g;
+}
+function wreckify(g){ (function rec(o){ if(o.isMesh) o.material=FM.wreck; (o.children||[]).forEach(rec); })(g); }
+
+/* ---------- foes, shots, damage ---------- */
+const Foes={
+  list:[], shots:[], fires:[], flashT:0, lastMsg:0,
+  init(){ if(this.shots.length) return;
+    const geo=new THREE.BoxGeometry(.1,.1,5), m1=new THREE.MeshBasicMaterial({color:0xff5030,fog:false});
+    for(let i=0;i<80;i++){ const m=new THREE.Mesh(geo,m1); m.visible=false; scene.add(m); this.shots.push({mesh:m,on:false,vel:new THREE.Vector3(),life:0,dmg:1,cdmg:1}); } },
+  clearShots(){ this.shots.forEach(function(t){ t.on=false; t.mesh.visible=false; }); },
+  clear(){ this.list.length=0; this.fires.length=0; this.clearShots(); S.hull=S.hull==null?100:S.hull; },
+  add(kind,x,z,yaw,o){
+    const sp=FOE[kind], g=buildModel(kind);
+    const f={kind:kind,g:g,r:sp.r,hp:sp.hp,pts:sp.pts,big:sp.big||0,alive:true,c:new THREE.Vector3(),hy:sp.hy,fire:sp.fire?Object.assign({},sp.fire):null,cd:0,burst:0,react:0,alert:false,los:true,losT:0,noFall:kind!=='inf'&&kind!=='rpg',fall:0,path:null,prog:0,vsConv:false};
+    if(o) Object.assign(f,o);
+    const y=groundY(x,z); g.position.set(x,y,z); g.rotation.y=yaw||0; missionGroup.add(g); f.c.set(x,y+sp.hy,z);
+    targets.push(f); this.list.push(f); return f;
+  },
+  place(o){ const p=o.path, k=o.prog/p.len, x=p.ax+(p.bx-p.ax)*k, z=p.az+(p.bz-p.az)*k, y=groundY(x,z); o.g.position.set(x,y,z); o.g.rotation.y=p.yaw; o.c.set(x,y+o.hy,z); },
+  mkPath(ax,az,bx,bz,speed){ return {ax:ax,az:az,bx:bx,bz:bz,len:Math.hypot(bx-ax,bz-az),speed:speed,yaw:Math.atan2(bx-ax,bz-az)}; },
+  alive(kinds){ return this.list.filter(function(f){ return f.alive&&(!kinds||kinds.indexOf(f.kind)>=0); }); },
+  explode(p,big){
+    const n=5+big*5; for(let i=0;i<n;i++) spawnFx({pos:p.clone(),vel:new THREE.Vector3(rnd(-6,6)*(1+big*.4),rnd(1,9),rnd(-6,6)*(1+big*.4)),s0:3,s1:rnd(9,16)+big*3,life:rnd(.5,1.1),color:i%2?0xff8a2a:0xffd070,op:1,add:true,drag:1.1});
+    for(let i=0;i<3+big*3;i++) spawnFx({pos:p.clone(),vel:new THREE.Vector3(rnd(-3,3),rnd(3,8),rnd(-3,3)),s0:3,s1:rnd(12,22),life:rnd(2,4),color:0x1c1c1c,op:.65,drag:.5});
+    if(big>=2) Snd.boom();
+  },
+  kill(f){
+    this.explode(f.c,f.big);
+    if(f.kind!=='inf'&&f.kind!=='rpg'){ wreckify(f.g); this.fires.push({p:new THREE.Vector3(f.c.x,f.g.position.y+1,f.c.z),t:0,big:f.big}); if(this.fires.length>5) this.fires.shift(); f.g.rotation.z=(Math.random()-.5)*.1; }
+    if(f.lamp) f.lamp.visible=false;
+    const h=HND[O.id]; if(h&&h.onKill) h.onKill(f);
+  },
+  hurt(d){
+    if(S.crashed||O.done) return;
+    S.hull-=d; S.underFire=2.5; camShake=Math.max(camShake,.1);
+    const ov=$('hitov'); ov.classList.add('on'); setTimeout(function(){ ov.classList.remove('on'); },90);
+    Snd.beep(300,.05);
+    if(S.time-this.lastMsg>6){ this.lastMsg=S.time; radio('クルー',S.hull<35?'損傷大！離脱してください！':'被弾！回避機動！'); }
+    try{ if(navigator.vibrate) navigator.vibrate(40); }catch(e){}
+    if(S.hull<=0){ S.hull=0; crash('被弾により墜落'); }
+  },
+  losClear(f){ const a=f.c, b=S.pos; for(let i=1;i<6;i++){ const k=i/6, x=a.x+(b.x-a.x)*k, z=a.z+(b.z-a.z)*k, y=a.y+(b.y-a.y)*k; if(groundY(x,z)>y-.5) return false; } return true; },
+  fireAt(f,tp,tv,d,conv){
+    const t=this.shots.find(function(o){ return !o.on; }); if(!t) return; const fr=f.fire;
+    const tof=d/fr.spd; tmpA.copy(tp).addScaledVector(tv,tof*.75); tmpA.sub(f.c); tmpA.y-=.2; tmpA.normalize();
+    const sp=fr.spread*(conv?.35:1); tmpA.x+=(Math.random()+Math.random()-1)*sp; tmpA.y+=(Math.random()+Math.random()-1)*sp; tmpA.z+=(Math.random()+Math.random()-1)*sp; tmpA.normalize();
+    t.on=true; t.life=Math.min(4,(fr.rng*1.25)/fr.spd); t.dmg=fr.dmg; t.cdmg=fr.vsConvoy||fr.dmg*2.2; t.vel.copy(tmpA).multiplyScalar(fr.spd);
+    t.mesh.position.copy(f.c); t.mesh.position.y+=.3; t.mesh.scale.set(fr.heavy?2.4:1,fr.heavy?2.4:1,fr.heavy?1.8:1); t.mesh.visible=true; t.mesh.lookAt(tmpB.copy(t.mesh.position).add(t.vel));
+    if(d<900) spawnFx({pos:t.mesh.position.clone(),vel:new THREE.Vector3(),s0:.8,s1:fr.heavy?3:1.6,life:.09,color:0xffc060,op:1,add:true});
+  },
+  step(dt){
+    if(!S.started) return;
+    const live=!S.crashed&&!O.done, conv=O.P&&O.P.convoy;
+    S.underFire=Math.max(0,S.underFire-dt);
+    // moving vehicles
+    for(let i=0;i<this.list.length;i++){ const f=this.list[i]; if(f.alive&&f.path&&f.path.speed){ f.prog+=f.path.speed*dt; if(f.path.stopAt!=null&&f.prog>f.path.stopAt) f.prog=f.path.stopAt; this.place(f); } }
+    // hostile fire
+    if(live) for(let i=0;i<this.list.length;i++){
+      const f=this.list[i]; if(!f.alive||!f.fire) continue; const fr=f.fire;
+      const dx=S.pos.x-f.c.x, dy=S.pos.y+1-f.c.y, dz=S.pos.z-f.c.z, d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+      const det=fr.det*((O.P&&O.P.dark)?.62:nightF>.6?.8:1);
+      if(!f.alert&&d<det){ f.alert=true; f.react=.9+Math.random()*.9; }
+      else if(f.alert&&d>det*1.7&&!f.hit) f.alert=false;
+      f.cd-=dt; if(f.react>0){ f.react-=dt; continue; }
+      if(f.cd>0) continue;
+      let tgt=null, td=0;
+      if(f.alert&&d<fr.rng){ f.losT-=dt; if(f.losT<=0){ f.losT=.4; f.los=this.losClear(f); } if(f.los){ tgt='h'; td=d; } }
+      if(!tgt&&f.vsConv&&conv){ let best=null,bd=fr.rng+80; conv.v.forEach(function(v){ if(!v.alive) return; const q=Math.hypot(v.c.x-f.c.x,v.c.z-f.c.z); if(q<bd){ bd=q; best=v; } }); if(best){ tgt='c'; td=bd; f.cv=best; } }
+      if(!tgt) continue;
+      if(tgt==='h') this.fireAt(f,S.pos,S.vel,td,false); else this.fireAt(f,f.cv.c,tmpV0.set(0,0,0),td,true);
+      f.burst++; if(f.burst>=fr.burst){ f.burst=0; f.cd=Math.max(fr.pause,1/fr.rate); } else f.cd=1/fr.rate;
+    }
+    // tracers
+    for(let i=0;i<this.shots.length;i++){
+      const t=this.shots[i]; if(!t.on) continue;
+      const prev=tmpA.copy(t.mesh.position); t.mesh.position.addScaledVector(t.vel,dt); t.life-=dt; let hit=false;
+      if(!S.crashed&&!O.done){ tmpB.set(S.pos.x,S.pos.y+1.2,S.pos.z); if(segDist2(prev,t.mesh.position,tmpB)<3.1*3.1){ hit=true; this.hurt(t.dmg); } }
+      if(!hit&&conv) for(let k=0;k<conv.v.length&&!hit;k++){ const v=conv.v[k]; if(v.alive&&segDist2(prev,t.mesh.position,v.c)<3.3*3.3){ hit=true; Foes.hitConvoy(v,t.cdmg); } }
+      const p=t.mesh.position; if(!hit&&p.y<groundY(p.x,p.z)){ hit=true; spawnFx({pos:new THREE.Vector3(p.x,groundY(p.x,p.z)+.3,p.z),vel:new THREE.Vector3(0,2,0),s0:.8,s1:3,life:.5,color:0xa89c78,op:.5}); }
+      if(hit||t.life<=0){ t.on=false; t.mesh.visible=false; }
+    }
+    if(S.hull<55&&!S.crashed&&Math.random()<dt*(S.hull<30?14:6)) spawnFx({pos:new THREE.Vector3(S.pos.x,S.pos.y+1.2,S.pos.z),vel:new THREE.Vector3(S.vel.x*.7,1.5,S.vel.z*.7),s0:1,s1:6,life:1.6,color:S.hull<30?0x111111:0x555555,op:.6,drag:.4});
+    // field repair at home pad
+    if(S.hull<100&&!S.crashed&&S.onGround&&landedAt(HOME.x,HOME.z,24,3)){ S.hull=Math.min(100,S.hull+dt*7); if(S.hull>=100) toast('機体の修理完了'); }
+  },
+  hitConvoy(v,d){
+    if(!v.alive) return; v.hp-=d; spawnFx({pos:v.c.clone(),vel:new THREE.Vector3(0,3,0),s0:1,s1:4,life:.4,color:0xffb060,op:.9,add:true});
+    if(v.hp<=0){ v.alive=false; v.path.speed=0; wreckify(v.g); Foes.explode(v.c,2); Foes.fires.push({p:new THREE.Vector3(v.c.x,v.g.position.y+1,v.c.z),t:0,big:2}); if(Foes.fires.length>5) Foes.fires.shift(); radio('車列','1両被弾、動けません！'); }
+    else if(v.hp<45&&Math.random()<.2) spawnFx({pos:v.c.clone(),vel:new THREE.Vector3(0,4,0),s0:1.4,s1:6,life:1.5,color:0x222222,op:.6});
+  },
+  visuals(dt){
+    for(let i=0;i<this.fires.length;i++){ const f=this.fires[i]; f.t+=dt; if(f.t>.22){ f.t=0; spawnFx({pos:f.p.clone(),vel:new THREE.Vector3(wind.x*.4+rnd(-.5,.5),rnd(4,7),wind.z*.4+rnd(-.5,.5)),s0:2,s1:11,life:4,color:0x1c1c1c,op:.6,drag:.3}); if(Math.random()<.4) spawnFx({pos:f.p.clone(),vel:new THREE.Vector3(rnd(-1,1),rnd(1,3),rnd(-1,1)),s0:1.6,s1:3.5,life:.5,color:0xff7a2a,op:.9,add:true}); } }
+  }
+};
+const tmpV0=new THREE.Vector3();
+Foes.init();
+
+/* ---------- plumbing into the mission controller ---------- */
+(function(){
+  const baseClean=Ops.cleanup, baseUpd=Ops.update, basePanel=Ops.panel, baseVis=Ops.visuals, baseCrash=Ops.onCrash;
+  Ops.cleanup=function(){ baseClean.call(Ops); Foes.clear(); };
+  Ops.update=function(dt){ if(S.started&&!S.paused) Foes.step(dt); baseUpd.call(Ops,dt); };
+  Ops.visuals=function(dt){ baseVis.call(Ops,dt); Foes.visuals(dt); for(let i=0;i<Foes.list.length;i++){ const f=Foes.list[i]; if(f.alive&&f.hurt>0) f.hurt-=dt; } };
+  Ops.onCrash=function(){ baseCrash.call(Ops); Foes.clearShots(); };
+  Ops.panel=function(){ const rows=basePanel.call(Ops), m=MISSION_BY_ID[O.id]; if(m&&m.combat){ rows.unshift(['敵',Foes.alive().filter(function(f){ return f.fire||f.kind==='truck'||f.kind==='tanker'||f.kind==='depot'||f.kind==='radar'||f.kind==='hq'||f.kind==='gen'; }).length+' 残',''],['機体',Math.round(S.hull)+' %',S.hull<35?'warn':S.hull<65?'':'']); } return rows; };
+})();
+
+function toHome(msg){ O.stage=9; setMarkers([{pos:new THREE.Vector3(HOME.x,AF+4,HOME.z),label:'HOME',main:true}]); setBeam(new THREE.Vector3(HOME.x,AF,HOME.z)); radio('司令部',msg||'目標達成。帰投せよ。'); }
+function foeMarkers(list,extra){
+  const l=list.filter(function(f){ return f.alive; }).map(function(f){ return {f:f,d:Math.hypot(f.c.x-S.pos.x,f.c.z-S.pos.z)}; }).sort(function(a,b){ return a.d-b.d; }).slice(0,extra?6:7);
+  const m=l.map(function(o,i){ return {pos:o.f.c,label:i===0?'敵':'',main:i===0&&!extra,cls:'warn'}; });
+  if(extra) m.unshift(extra);
+  setMarkers(m);
+}
+function finishCombat(rows,extra){ complete(clamp(extra==null?S.hull/100:extra,0,1),[['機体残',Math.round(S.hull)+' %']].concat(rows||[])); }
+function homeStage(dt,rows,extra){ setObj('ホームパッドへ帰投して着陸'+(S.hull<50?'（機体損傷大）':'')); if(landedAt(HOME.x,HOME.z,14,2)) finishCombat(rows,extra); }
+
+/* ---------- OP-07: convoy interdiction ---------- */
+HND.strike={
+  start(){
+    const A={x:800,z:1800}, B={x:-100,z:1750}, kinds=['apc','truck','truck','tanker','truck','truck','apc'];
+    O.P.kills=0; O.P.total=kinds.length;
+    O.P.foes=kinds.map(function(k,i){ const path=Foes.mkPath(A.x,A.z,B.x,B.z,5), f=Foes.add(k,A.x,A.z,path.yaw,{path:path,prog:-i*36}); Foes.place(f); return f; });
+    O.P.end=B; radio('司令部','敵補給車列が西進中。ドアガンで全車両を撃破し、目標地点到達を阻止せよ。装甲車は機銃で応戦する。');
+    toast('ドアを開き、機首を目標へ向けて射撃（Space / FIREボタン）',4200);
+  },
+  onKill(f){ O.P.kills++; if(f.kind==='tanker') radio('クルー','燃料車、爆発！'); },
+  update(dt){
+    if(O.stage===0){
+      setObj('敵車列を阻止　撃破 '+O.P.kills+' / '+O.P.total);
+      foeMarkers(O.P.foes);
+      for(let i=0;i<O.P.foes.length;i++){ const f=O.P.foes[i]; if(f.alive&&f.prog>=f.path.len){ failMission('敵車列が目標地点に到達した（任務失敗）'); return; } }
+      if(O.P.kills>=O.P.total){ S.score+=300; toHome('車列を殲滅。よくやった。帰投せよ。'); }
+    } else homeStage(dt,[['撃破',O.P.kills+' / '+O.P.total]]);
+  },
+  actLabel(){ return 'ドア'; }, act(){ toggleDoor(); }
+};
+
+/* ---------- OP-08: strongpoint assault ---------- */
+HND.assault={
+  start(){
+    const C={x:900,z:-100}, yaw=Math.atan2(HOME.x-C.x,HOME.z-C.z); O.P.C=C;
+    const P=function(kind,ox,oz,o){ return Foes.add(kind,C.x+ox,C.z+oz,yaw+(o&&o.dy||0),o); };
+    O.P.aa=[P('aa',-38,26),P('aa',32,34),P('aa',4,-44)];
+    O.P.obj=[P('depot',-10,2,{dy:.3}),P('depot',22,-14,{dy:-.2}),P('radar',-44,-30)];
+    O.P.misc=[P('mg',50,4),P('mg',-54,10),P('tank',62,-40),P('apc',-20,-52)];
+    for(let i=0;i<7;i++){ const a=i*.9+.4, r=14+Math.random()*30; O.P.misc.push(P('inf',Math.cos(a)*r,Math.sin(a)*r,{dy:Math.random()*6})); }
+    O.P.kills=0;
+    radio('司令部','敵の山岳拠点を確認。まず対空火器3基を無力化、その後弾薬庫とレーダーを破壊せよ。低空侵入で稜線を盾にせよ。');
+    toast('敵対空火器は射程1km。地形を使って接近',4200);
+  },
+  onKill(f){ O.P.kills++; },
+  update(dt){
+    const aaLeft=O.P.aa.filter(function(f){ return f.alive; }).length, objLeft=O.P.obj.filter(function(f){ return f.alive; }).length;
+    if(O.stage===0){
+      setObj('対空火器を制圧 '+(3-aaLeft)+' / 3');
+      foeMarkers(O.P.aa);
+      if(!aaLeft){ O.stage=1; S.score+=300; radio('司令部','対空火器の沈黙を確認。弾薬庫とレーダーを破壊せよ。'); }
+    } else if(O.stage===1){
+      setObj('弾薬庫・レーダーを破壊 '+(3-objLeft)+' / 3');
+      foeMarkers(O.P.obj.concat(O.P.aa));
+      if(!objLeft){ S.score+=400; toHome('拠点の無力化を確認。帰投せよ。'); }
+    } else homeStage(dt,[['撃破数',O.P.kills+'']]);
+  },
+  actLabel(){ return 'ドア'; }, act(){ toggleDoor(); }
+};
+
+/* ---------- OP-09: combat search & rescue ---------- */
+HND.csar={
+  start(){
+    const P={x:500,z:1850}, gy=groundY(P.x,P.z); O.P.P=P;
+    const pilot=makeSurvivor(P.x,gy,P.z,0x2a8cff); O.P.list=[pilot]; hoistInit(O.P.list);
+    smoker(P.x+10,gy,P.z-8,0x3ccf5a);
+    O.P.foes=[]; O.P.trig=false;
+    for(let i=0;i<5;i++){ const a=i*1.3+.5, r=130+Math.random()*90; O.P.foes.push(Foes.add('inf',P.x+Math.cos(a)*r,P.z+Math.sin(a)*r,a+3.1)); }
+    O.P.foes.push(Foes.add('rpg',P.x-90,P.z+150,0));
+    for(let i=0;i<2;i++){ const path=Foes.mkPath(980+i*30,2240,P.x+20,P.z+60,0); path.stopAt=path.len-110+i*50; O.P.foes.push(Foes.add('apc',980+i*30,2240,path.yaw,{path:path,prog:0})); }
+    setMarkers([{pos:pilot.pos,label:'撃墜パイロット',main:true}]);
+    radio('司令部','友軍機が撃墜された。パイロットは北東部で生存、敵部隊が接近中。急ぎ救出せよ。ホイストは降下→巻き上げ。');
+  },
+  update(dt){
+    survivorsAnim(O.P.list,S.time);
+    hoistStep(dt,function(){ S.score+=400; radio('クルー','パイロット収容！ここを離脱する！'); });
+    if(!O.P.trig&&Math.hypot(S.pos.x-O.P.P.x,S.pos.z-O.P.P.z)<1300){ O.P.trig=true; O.P.foes.forEach(function(f){ if(f.path){ f.path.speed=7; } }); radio('司令部','敵の装甲車2両が現場へ急行中！'); }
+    if(O.stage===0){
+      setObj('パイロットを救出（ホイスト）'+(Hoist.aboard?'　収容済み':''));
+      const pl=O.P.list[0]; foeMarkers(O.P.foes,{pos:pl.pos,label:'パイロット',main:true,cls:''});
+      if(Hoist.aboard>=1){ toHome('救出成功。敵の射程から離脱し、帰投せよ。'); }
+    } else homeStage(dt,[['救助人数','1名']]);
+  },
+  panel(){ const L=Hoist.L; return [['ケーブル',L?Math.round(L.len)+' m':'--','']]; },
+  actLabel(){ return hoistLabel(); }, act(){ hoistAct(); }
+};
+
+/* ---------- OP-10: convoy escort ---------- */
+HND.escort={
+  start(){
+    const A={x:430,z:900}, B={x:430,z:1900}; O.P.A=A; O.P.B=B;
+    const v=[]; for(let i=0;i<4;i++){ const path=Foes.mkPath(A.x,A.z,B.x,B.z,5.5), g=buildModel('ftruck'), o={g:g,path:path,prog:-i*32,hp:100,alive:true,hy:1.8,c:new THREE.Vector3(),r:3.2}; missionGroup.add(g); Foes.place(o); v.push(o); }
+    O.P.convoy={v:v}; O.P.wave=0; O.P.kills=0;
+    radio('司令部','補給車列4両が補給所から北部拠点へ移動する。上空から護衛し、待ち伏せを排除せよ。');
+    toast('敵は車列を狙う。先回りして待ち伏せを潰せ',4200);
+  },
+  spawnWave(n){
+    const A=O.P.A, B=O.P.B, side=n%2?1:-1, z0=O.P.lead+330;
+    const at=function(ox,oz){ return [A.x+side*(170+ox),z0+oz]; };
+    const add=function(kind,ox,oz){ const p=at(ox,oz); const f=Foes.add(kind,p[0],p[1],side>0?-1.57:1.57,{vsConv:true}); return f; };
+    if(n===0){ add('inf',0,0); add('inf',15,20); add('apc',-10,-30); radio('クルー','前方に待ち伏せ！歩兵と装甲車！'); }
+    else if(n===1){ add('apc',0,0); add('apc',20,-40); add('inf',-12,25); add('inf',8,40); add('rpg',-20,-10); radio('クルー','第2の待ち伏せ！対戦車兵に注意！'); }
+    else { add('tank',10,0); add('rpg',-15,25); add('rpg',25,-35); add('inf',0,50); add('inf',-25,-10); radio('クルー','敵戦車を確認！車列を守れ！'); }
+  },
+  onKill(f){ O.P.kills++; },
+  update(dt){
+    const C=O.P.convoy, alive=C.v.filter(function(v){ return v.alive; });
+    for(let i=0;i<C.v.length;i++){ const v=C.v[i]; if(v.alive){ v.prog+=v.path.speed*dt; if(v.prog>v.path.len) v.prog=v.path.len; Foes.place(v); } }
+    if(!alive.length){ failMission('護衛対象の車列が全滅した（任務失敗）'); return; }
+    let lead=-1e9; alive.forEach(function(v){ lead=Math.max(lead,v.prog); }); O.P.lead=O.P.A.z+lead;
+    const trig=[120,440,760];
+    if(O.P.wave<3&&lead>trig[O.P.wave]){ this.spawnWave(O.P.wave); O.P.wave++; }
+    const ld=alive.reduce(function(a,b){ return b.prog>a.prog?b:a; },alive[0]);
+    const hostile=Foes.alive().length;
+    if(O.stage===0){
+      setObj('車列を護衛　残存 '+alive.length+' / 4　到達まで '+Math.max(0,Math.round(O.P.B.z-O.P.lead))+' m');
+      foeMarkers(Foes.list,{pos:ld.c,label:'車列',main:true,cls:'sub'});
+      if(lead>=O.P.B.z-O.P.A.z-5&&O.P.wave>=3){ S.score+=alive.length*200; radio('車列','目的地に到着。護衛に感謝する！'); toHome('護衛完了。帰投せよ。'); O.P.ok=alive.length; }
+    } else homeStage(dt,[['車列残存',O.P.ok+' / 4'],['撃破',O.P.kills+'']],.4*(O.P.ok/4)+.6*S.hull/100);
+  },
+  panel(){ const C=O.P.convoy; if(!C) return []; const al=C.v.filter(function(v){ return v.alive; }); const mn=al.length?Math.round(Math.min.apply(null,al.map(function(v){ return v.hp; }))):0; return [['車列',al.length+' / 4',al.length<3?'warn':''],['最小耐久',mn+' %',mn<40?'warn':'']]; },
+  actLabel(){ return 'ドア'; }, act(){ toggleDoor(); }
+};
+
+/* ---------- OP-11: night raid ---------- */
+HND.raid={
+  start(){
+    const C={x:-760,z:260}, yaw=.4; O.P.C=C; O.P.lamps=[];
+    const P=function(kind,ox,oz,dy){ return Foes.add(kind,C.x+ox,C.z+oz,yaw+(dy||0)); };
+    const lamp=function(f,h){ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:puffTex,color:0xffd98a,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})); s.scale.set(16,16,1); s.position.set(f.c.x,f.g.position.y+h,f.c.z); missionGroup.add(s); f.lamp=s; O.P.lamps.push(s); };
+    O.P.hq=P('hq',0,0,0); lamp(O.P.hq,3);
+    O.P.gen=[P('gen',-22,14),P('gen',20,-18)]; O.P.gen.forEach(function(g){ lamp(g,2); });
+    O.P.misc=[P('mg',42,10),P('mg',-44,-8),P('mg',6,40),P('apc',34,-36)];
+    for(let i=0;i<8;i++){ const a=i*.8+.2, r=16+Math.random()*30; O.P.misc.push(P('inf',Math.cos(a)*r,Math.sin(a)*r,Math.random()*6)); }
+    O.P.dark=false; O.P.kills=0;
+    radio('司令部','夜間強襲。敵司令所は灯火下にある。まず発電機2基を破壊して灯火管制に追い込み、その後司令所を撃破せよ。');
+    toast('暗視装置（NVGボタン）を推奨。ドアを開いて射撃',4500);
+  },
+  onKill(f){ O.P.kills++; if(f.kind==='gen'&&!O.P.gen.some(function(g){ return g.alive; })){ O.P.dark=true; O.P.lamps.forEach(function(s){ s.visible=false; }); FM.lamp.color.setHex(0x050505); radio('クルー','灯火消えた！敵はこちらを見失いやすい。'); } },
+  end(){ FM.lamp.color.setHex(0xffd98a); },
+  update(dt){
+    const glow=.8+.2*Math.sin(S.time*5); O.P.lamps.forEach(function(s){ s.material.opacity=glow; });
+    const gl=O.P.gen.filter(function(f){ return f.alive; }).length;
+    if(O.stage===0){
+      setObj('発電機を破壊して灯火管制 '+(2-gl)+' / 2');
+      foeMarkers(O.P.gen);
+      if(!gl){ O.stage=1; S.score+=300; radio('司令部','灯火管制を確認。司令所を叩け。'); }
+    } else if(O.stage===1){
+      setObj('敵司令所を破壊');
+      foeMarkers([O.P.hq].concat(O.P.misc));
+      if(!O.P.hq.alive){ S.score+=500; toHome('司令所の破壊を確認。帰投せよ。'); }
+    } else homeStage(dt,[['撃破数',O.P.kills+'']]);
+  },
+  actLabel(){ return 'ドア'; }, act(){ toggleDoor(); }
+};
+
+/* ---------- register missions (between ops and training) ---------- */
+{
+  const add=[
+   {id:'strike',grp:'combat',combat:1,code:'OP-07',title:'車列阻止（対地攻撃）',short:'敵補給車列7両をドアガンで撃破し、到達を阻止',diff:4,par:240,rec:{tod:10.5,wx:'clear'},
+    detail:'<b>状況</b> 敵補給車列（装甲車2・トラック4・燃料車1）が北部の街道を西進中。<br><b>任務</b> ドアガンで全車両を撃破。1両でも目標地点へ到達すると失敗。<br><b>要点</b> 装甲車は機銃で応戦。曳光弾が見えたら横へ機動。燃料車は爆発するので近寄りすぎない。機首を目標に向けて撃つ。'},
+   {id:'assault',grp:'combat',combat:1,code:'OP-08',title:'敵拠点制圧',short:'対空火器を黙らせ、弾薬庫とレーダーを破壊',diff:5,par:420,rec:{tod:15.5,wx:'clear'},
+    detail:'<b>状況</b> 東部丘陵に敵の防空拠点。対空機関砲3、機銃座2、戦車、歩兵が守る。<br><b>任務</b> 第1段階：対空火器3基を制圧。第2段階：弾薬庫2か所とレーダーを破壊。帰投して着陸。<br><b>要点</b> 低空・稜線沿いに接近し、短時間の射撃後に遮蔽へ退避（ヒット＆ラン）。機体損傷が大きい時は離脱。ホームで修理可能。'},
+   {id:'csar',grp:'combat',combat:1,code:'OP-09',title:'戦闘捜索救難（CSAR）',short:'撃墜されたパイロットを敵火力下でホイスト救出',diff:5,par:420,rec:{tod:17.2,wx:'wind'},
+    detail:'<b>状況</b> 友軍機が撃墜され、パイロットが敵地で生存。敵歩兵が周囲に、装甲車2両が急行中。<br><b>任務</b> 現場へ進出し、ホバリングしてホイストで収容。敵を制圧しつつ、被弾したら離脱して再進入も可。収容後は帰投。<br><b>要点</b> 先に周囲の歩兵と装甲車を排除すると安全。ホバリング中は的になる。'},
+   {id:'escort',grp:'combat',combat:1,code:'OP-10',title:'車列護衛',short:'補給車列を護衛し、3度の待ち伏せを排除',diff:5,par:300,rec:{tod:12.5,wx:'clear'},
+    detail:'<b>状況</b> 補給車列4両が補給所から北部拠点へ移動。沿道に敵の待ち伏せ。<br><b>任務</b> 車列を上空から護衛し、待ち伏せ（歩兵・装甲車・対戦車兵・戦車）を先に排除。車列が到達したら帰投。全滅で失敗。<br><b>要点</b> 敵は車列を狙い撃つ。車列の前方へ先回りして脅威を潰す。対戦車兵(RPG)は車両へ大ダメージ。'},
+   {id:'raid',grp:'combat',combat:1,code:'OP-11',title:'夜間強襲（司令所破壊）',short:'暗視装置で夜間に侵入。発電機→司令所を破壊',diff:5,par:420,rec:{tod:22.8,wx:'clear'},
+    detail:'<b>状況</b> 深夜、敵の前線司令所が灯火下で活動。<br><b>任務</b> 発電機2基を破壊して灯火管制（敵の索敵範囲が縮小）。続けて司令所を破壊し、帰投。<br><b>要点</b> 暗視装置（NVG）を使うと視界が確保できる。機銃座3基と装甲車が警戒。曳光弾の方向で敵位置を把握。'}
+  ];
+  const at=MISSIONS.findIndex(function(m){ return m.grp==='train'; });
+  MISSIONS.splice.apply(MISSIONS,[at,0].concat(add)); add.forEach(function(m){ MISSION_BY_ID[m.id]=m; });
+}
 /* ===================== UI helpers ===================== */
 let toastT=0;
 function toast(msg,ms){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){ el.classList.remove('show'); },ms||2600); }
@@ -1870,6 +2220,16 @@ const stickIn={lx:0,ly:0,rx:0,ry:0}; let fireBtn=false;
 const pad={lx:0,ly:0,rx:0,ry:0,fire:false}, padPrev=[];
 function curve(v){ const a=Math.abs(v), dz=.07; if(a<dz) return 0; return Math.sign(v)*Math.pow((a-dz)/(1-dz),1.35); }
 const orbit={az:0,el:.3,dist:30}; let camSnap=true, camShake=0, orbitDrag=null;
+const look={az:0,el:0,zoom:1,idle:9};
+function lookDrag(dx,dy){
+  look.idle=0;
+  if(S.cam===3){ orbit.az-=dx*.006; orbit.el=clamp(orbit.el+dy*.004,-.1,1.3); }
+  else if(S.cam===0){ look.az-=dx*.006; look.el=clamp(look.el+dy*.003,-.25,1.0); }
+  else if(S.cam===1||S.cam===2){ look.az=clamp(look.az-dx*.005,-2.2,2.2); look.el=clamp(look.el-dy*.003,-.7,.8); }
+}
+function lookReset(){ look.az=look.el=0; look.zoom=1; orbit.dist=30; orbit.el=.3; }
+function lookZoom(f){ if(S.cam===0) look.zoom=clamp(look.zoom*f,.45,3); else orbit.dist=clamp(orbit.dist*f,10,90); look.idle=0; }
+
 
 function makeFloatingStick(zone,el,cb){
   const knob=el.querySelector('i'); let pid=null, ox=0, oy=0, app=null;
@@ -1882,7 +2242,7 @@ function makeFloatingStick(zone,el,cb){
     document.body.classList.remove('fresh'); Snd.init(); e.preventDefault();
   });
   zone.addEventListener('pointermove',function(e){
-    if(orbitDrag&&e.pointerId===orbitDrag.id){ orbit.az-=(e.clientX-orbitDrag.x)*.006; orbit.el=clamp(orbit.el+(e.clientY-orbitDrag.y)*.004,-.1,1.3); orbitDrag.x=e.clientX; orbitDrag.y=e.clientY; return; }
+    if(orbitDrag&&e.pointerId===orbitDrag.id){ lookDrag(e.clientX-orbitDrag.x,e.clientY-orbitDrag.y); orbitDrag.x=e.clientX; orbitDrag.y=e.clientY; return; }
     if(e.pointerId!==pid) return;
     let dx=e.clientX-ox, dy=e.clientY-oy; const r=R(), d=Math.hypot(dx,dy);
     if(d>r){ const k=(d-r)/d; ox+=dx*k; oy+=dy*k; dx=e.clientX-ox; dy=e.clientY-oy; place(); }
@@ -1894,7 +2254,17 @@ function makeFloatingStick(zone,el,cb){
 }
 makeFloatingStick($('zoneL'),$('stkL'),function(x,y){ stickIn.lx=x; stickIn.ly=y; });
 makeFloatingStick($('zoneR'),$('stkR'),function(x,y){ stickIn.rx=x; stickIn.ry=y; });
-$('app').addEventListener('wheel',function(e){ orbit.dist=clamp(orbit.dist*(1+Math.sign(e.deltaY)*.08),12,90); },{passive:true});
+// centre zone: free-look camera (drag = rotate, pinch = zoom, double tap = reset)
+{ const zc=$('zoneC'), ptr=new Map(); let pinch0=0, tapT=0, moved=0;
+  zc.addEventListener('pointerdown',function(e){ try{ zc.setPointerCapture(e.pointerId); }catch(_){} ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); moved=0; look.idle=0; document.body.classList.remove('fresh'); Snd.init(); e.preventDefault();
+    if(ptr.size===2){ const a=Array.from(ptr.values()); pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); } });
+  zc.addEventListener('pointermove',function(e){ const p=ptr.get(e.pointerId); if(!p) return; const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY; moved+=Math.abs(dx)+Math.abs(dy);
+    if(ptr.size>=2){ const a=Array.from(ptr.values()), d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); if(pinch0>10&&d>10){ lookZoom(pinch0/d); } pinch0=d; look.idle=0; }
+    else lookDrag(dx,dy); });
+  const up=function(e){ if(!ptr.has(e.pointerId)) return; ptr.delete(e.pointerId); pinch0=0; look.idle=0;
+    if(moved<10&&ptr.size===0){ const n=performance.now(); if(n-tapT<350){ lookReset(); toast('視点をリセット',900); tapT=0; } else tapT=n; } };
+  zc.addEventListener('pointerup',up); zc.addEventListener('pointercancel',up); }
+$('app').addEventListener('wheel',function(e){ lookZoom(1+Math.sign(e.deltaY)*.08); },{passive:true});
 $('app').addEventListener('contextmenu',function(e){ e.preventDefault(); });
 document.addEventListener('gesturestart',function(e){ e.preventDefault(); });
 
@@ -1981,12 +2351,14 @@ function updateCamera(dt){
   camera.fov+=(fovT-camera.fov)*Math.min(1,dt*3); camera.updateProjectionMatrix();
   camShake=lerp(camShake,(windSpeed*.004+spk*.0006+S.rpm*.01+(S.onGround?0:turb.length()*.01))*(S.cam===1||S.cam===2?1:.4),Math.min(1,dt*3));
   if(S.cam===4&&!camOk(4)) S.cam=0;
+  if(S.cam!==3){ look.idle+=dt; if(look.idle>1.6){ look.az=((look.az+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI; const k=Math.exp(-dt*3.2); look.az*=k; look.el*=k; } }
   if(S.crashed&&(S.cam===1||S.cam===2||S.cam===4)) S.cam=3;
   if(S.cam===1||S.cam===2){
     const lp=S.cam===1?tmpA.set(-.5,2.55,3.0):tmpA.set(-1.45,2.25,.9);
     camera.position.copy(heli.localToWorld(lp.clone()));
     camera.quaternion.copy(heli.quaternion).multiply(qFlip);
     if(S.cam===2){ qTmp.setFromAxisAngle(new THREE.Vector3(0,1,0),-.45); camera.quaternion.multiply(qTmp); }
+    if(look.az||look.el){ qTmp.setFromEuler(new THREE.Euler(look.el,look.az,0,'YXZ')); camera.quaternion.multiply(qTmp); }
     camera.position.x+=rnd(-1,1)*camShake; camera.position.y+=rnd(-1,1)*camShake;
     return;
   }
@@ -1996,12 +2368,14 @@ function updateCamera(dt){
     return;
   }
   if(S.cam===0){
-    const c=Math.cos(S.yaw), s=Math.sin(S.yaw), back=22+spk*.03;
-    const want=tmpA.set(S.pos.x-s*back,S.pos.y+6.5,S.pos.z-c*back);
+    const c=Math.cos(S.yaw), s=Math.sin(S.yaw), back=(22+spk*.03)*look.zoom;
+    const ca=S.yaw+Math.PI+look.az, ce=Math.cos(look.el);
+    const want=tmpA.set(S.pos.x+Math.sin(ca)*back*ce,S.pos.y+6.5*look.zoom+Math.sin(look.el)*back,S.pos.z+Math.cos(ca)*back*ce);
     const gyc=groundY(want.x,want.z)+3; if(want.y<gyc) want.y=gyc;
     if(camSnap){ camera.position.copy(want); camSnap=false; } else camera.position.lerp(want,1-Math.exp(-dt*4.5));
     camera.position.x+=rnd(-1,1)*camShake; camera.position.y+=rnd(-1,1)*camShake;
-    camera.lookAt(S.pos.x+s*10,S.pos.y+2,S.pos.z+c*10);
+    const lb=Math.min(1,Math.abs(look.az)*1.6+Math.abs(look.el)*1.6);
+    camera.lookAt(S.pos.x+s*10*(1-lb),S.pos.y+2,S.pos.z+c*10*(1-lb));
   }else{
     if(!S.crashed) orbit.az+=dt*.04;
     const cosE=Math.cos(orbit.el), want=tmpA.set(S.pos.x+Math.sin(orbit.az)*orbit.dist*cosE,S.pos.y+Math.sin(orbit.el)*orbit.dist+2,S.pos.z+Math.cos(orbit.az)*orbit.dist*cosE);
@@ -2088,6 +2462,8 @@ function updateHud(dt){
   if(anyLoad&&spk>45) W.push(['w','LOAD LIMIT']);
   if(Hoist.L&&Hoist.L.len>1&&spk>30) W.push(['w','HOIST OUT']);
   if(S.rpm<.55&&S.started&&!S.crashed) W.push(['w','SPOOLING']);
+  if(S.underFire>0&&!S.crashed) W.push(['a','TAKING FIRE']);
+  if(S.hull<35&&S.started&&!S.crashed) W.push(['a','HULL DAMAGE']);
   const ws=W.map(function(x){ return '<i class="'+x[0]+'">'+x[1]+'</i>'; }).join(''); if(ws!==lastWarn){ $('warn').innerHTML=ws; lastWarn=ws; }
   beepT-=.07; if(beepT<=0&&W.some(function(x){ return x[0]==='a'; })){ Snd.beep(880,.1); beepT=.7; }
   // mission panel + action button
@@ -2217,7 +2593,7 @@ addEventListener('resize',resize);
 (function buildBriefing(){
   const box=$('opt-mission'); let lastGrp='';
   MISSIONS.forEach(function(m,i){
-    if(m.grp!==lastGrp){ lastGrp=m.grp; const h=document.createElement('h2'); h.className='grp'; h.textContent=m.grp==='ops'?'作戦  OPERATIONS':'訓練  TRAINING'; box.appendChild(h); }
+    if(m.grp!==lastGrp){ lastGrp=m.grp; const h=document.createElement('h2'); h.className='grp'; h.textContent=m.grp==='ops'?'作戦  OPERATIONS':m.grp==='combat'?'戦闘作戦  COMBAT':'訓練  TRAINING'; box.appendChild(h); }
     const d=document.createElement('div'); d.className='opt';
     const best=SETTINGS.best[m.id];
     d.innerHTML='<input type="radio" name="mission" id="m'+i+'" value="'+i+'"'+(m.id==='flood'?' checked':'')+'><label for="m'+i+'"><span class="st">'+'★'.repeat(m.diff)+(best?'  '+best.grade:'')+'</span><span class="code">'+m.code+'</span><b>'+m.title+'</b><small>'+m.short+'</small></label>';
@@ -2234,7 +2610,7 @@ $('start-simulation').addEventListener('click',function(){
   const mi=+document.querySelector('input[name=mission]:checked').value;
   S.tod=parseFloat(document.querySelector('input[name=tod]:checked').value);
   S.weather=document.querySelector('input[name=wx]:checked').value;
-  S.assist=$('opt-assist').checked; S.cam=0; S.nvg=false; orbit.dist=30; orbit.el=.3;
+  S.assist=$('opt-assist').checked; S.cam=0; S.nvg=false; orbit.dist=30; orbit.el=.3; look.az=look.el=0; look.zoom=1;
   Snd.init(); updateEnv(); Ops.start(mi); setBrief(false); syncButtons();
   const m=MISSIONS[mi]; toast('天候: '+WEATHER[S.weather].name+'　'+m.title,3200);
   if(IS_TOUCH&&window.innerHeight>window.innerWidth) setTimeout(function(){ toast('横向きでの操作を推奨します',3000); },3300);
@@ -2257,6 +2633,6 @@ function applySettings(){
 // initial scene: parked at the home pad, slow orbit behind the briefing
 setBrief(true); S.tod=17.4; S.weather='clear'; applySettings(); resetHeli(); S.started=false; updateWind(0); updateEnv(); syncButtons();
 requestAnimationFrame(frame);
-window.__sim={targets:targets,gates:gates,S:S,Ops:Ops,O:O,IN:IN,loads:loads,Hoist:Hoist,HND:HND,MISSIONS:MISSIONS,Q:Q,MARKS:function(){ return MARKS; },SITE:SITE,RESCUE:RESCUE,step:function(n){ for(let i=0;i<n;i++){ simStep(); if(i%12===0){ updateVisuals(STEP*12); } } updateHud(1); updateMarkers(); updateMaps(1); },groundY:groundY,terrainH:terrainH,wind:wind};
+window.__sim={Foes:Foes,look:look,targets:targets,gates:gates,S:S,Ops:Ops,O:O,IN:IN,loads:loads,Hoist:Hoist,HND:HND,MISSIONS:MISSIONS,Q:Q,MARKS:function(){ return MARKS; },SITE:SITE,RESCUE:RESCUE,step:function(n){ for(let i=0;i<n;i++){ simStep(); if(i%12===0){ updateVisuals(STEP*12); } } updateHud(1); updateMarkers(); updateMaps(1); },groundY:groundY,terrainH:terrainH,wind:wind};
 })();
 </script>
