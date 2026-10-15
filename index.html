@@ -370,7 +370,7 @@ body:not(.touch) #actions{opacity:.9}
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
 <script>
 (function(){
 'use strict';
@@ -427,7 +427,7 @@ function loginUi(){
       '<label class="u" style="'+L+'">パスワード（確認）<input id="lg-p2" type="password" maxlength="64" autocomplete="new-password" style="'+I+'"></label>'+
       '<label class="u" style="'+L+'">GitHubユーザー名（アイコン表示用・任意）<input id="lg-g" maxlength="39" autocapitalize="off" placeholder="octocat" style="'+I+'"></label>'+
       '<label style="font-size:12px;color:#9bbf9f;display:flex;gap:8px;align-items:center"><input id="lg-r" type="checkbox" checked>この端末でログイン状態を保つ</label>'+
-      '<div id="lg-e" style="min-height:18px;font-size:12.5px;color:#ff9a8d"></div>'+
+      '<div id="lg-s" style="font-size:11.5px;color:#7aa583"></div>'+'<div id="lg-e" style="min-height:18px;font-size:12.5px;color:#ff9a8d"></div>'+
       '<button type="submit" id="lg-ok" style="padding:12px;border:0;border-radius:8px;background:#8dffa6;color:#06210c;font:700 15px \'Noto Sans JP\',sans-serif;cursor:pointer"></button>'+
       '<div style="font-size:11px;color:#6f8f74;line-height:1.6">サーバーを使わない仕組みのため、アカウントはパスワードで暗号化・署名され、遊んだ相手のブラウザ経由で他の端末からも開けます。パスワードを忘れると復元できません。</div></form>';
     document.body.appendChild(box);
@@ -436,6 +436,7 @@ function loginUi(){
       box.querySelectorAll('[data-m]').forEach(function(b){ const on=b.dataset.m===m; b.style.background=on?'#16301b':'#060b05'; b.style.color=on?'#8dffa6':'#7aa583'; }); q('#lg-p').autocomplete=m==='up'?'new-password':'current-password'; q('#lg-e').textContent=''; }
     box.querySelectorAll('[data-m]').forEach(function(b){ b.onclick=function(){ setMode(b.dataset.m); }; }); setMode('in');
     setTimeout(function(){ try{ q('#lg-n').focus(); }catch(e){} },50);
+    const sUp=function(s){ const e=q('#lg-s'); if(e) e.textContent='通信: '+s.text; }; MQ.onStatus(sUp); sUp(MQ.status());
     const err=function(t){ q('#lg-e').textContent=t; q('#lg-ok').disabled=false; };
     q('form').addEventListener('keydown',function(e){ e.stopPropagation(); });
     q('form').addEventListener('submit',async function(e){
@@ -448,15 +449,16 @@ function loginUi(){
         if(mode==='up'){
           if(pw!==q('#lg-p2').value){ q('#lg-e').style.color='#ff9a8d'; err('確認用パスワードが一致しません'); return; }
           const dn=(q('#lg-d').value.trim()||pn).slice(0,16); let gh=q('#lg-g').value.trim().replace(/^@/,''); if(!/^[A-Za-z0-9-]{1,39}$/.test(gh)) gh='';
-          ME={id:id,pn:pn}; const exist=await probe(id); if(exist){ q('#lg-e').style.color='#ff9a8d'; err('そのプレイヤー名はすでに使われています'); return; }
+          ME={id:id,pn:pn}; q('#lg-e').textContent='サーバーに問い合わせ中…'; const online=await MQ.waitOk(6000); const exist=online?await fetchAccount(id):null;
+          if(exist){ q('#lg-e').style.color='#ff9a8d'; err('そのプレイヤー名はすでに使われています'); return; }
           const kp=await CR.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
           const pkcs8=await CR.exportKey('pkcs8',kp.privateKey), pub=b64(await CR.exportKey('raw',kp.publicKey)), wk=await sealPriv(pw,pkcs8);
           const a={id:id,pn:pn,name:dn,gh:gh,pub:pub,wk:wk,reg:Date.now()}; saveSession(a,pkcs8,rem); PRIV=kp.privateKey; ME=a; try{ localStorage.removeItem(a.id+'_uh60ja.v2'); }catch(x){}
-          window.__fresh=true; box.remove(); res(a);
+          try{ await publishNew(a,pw); }catch(x){} window.__fresh=true; box.remove(); res(a);
         } else {
           let rec=null; try{ rec=JSON.parse(localStorage.getItem('uh60_acct_'+id)||'null'); }catch(x){}
-          if(!rec){ ME={id:id,pn:pn}; q('#lg-e').textContent='アカウント情報を探しています（最大10秒）…'; const r=await probe(id); rec=r; }
-          if(!rec||!rec.wk||!rec.pub){ q('#lg-e').style.color='#ff9a8d'; err('アカウントが見つかりません。新規登録するか、このアカウントを遊んだ相手がオンラインの時に再度お試しください'); return; }
+          if(!rec){ ME={id:id,pn:pn}; q('#lg-e').textContent='サーバーからアカウントを取得中…'; const online=await MQ.waitOk(7000); if(!online){ q('#lg-e').style.color='#ff9a8d'; err('サーバーに接続できません。通信環境を確認するか、登録した端末でお試しください'); return; } rec=await fetchAccount(id); }
+          if(!rec||!rec.wk||!rec.pub){ q('#lg-e').style.color='#ff9a8d'; err('アカウントが見つかりません。プレイヤー名を確認するか、新規登録してください'); return; }
           let pkcs8; try{ pkcs8=await openPriv(pw,rec.wk); }catch(x){ q('#lg-e').style.color='#ff9a8d'; err('パスワードが違います'); return; }
           PRIV=await impPriv(pkcs8); const a={id:id,pn:pn,name:rec.nm||pn,gh:rec.gh||'',pub:rec.pub,wk:rec.wk,reg:rec.reg||0};
           saveSession(a,pkcs8,rem); ME=a; box.remove(); res(a);
@@ -493,10 +495,11 @@ function clean(d){
 async function accept(id,d){
   if(!CR||!id||typeof id!=='string'||id.length>40) return false; const c=clean(d); if(!c||!c.sg||!c.pub||!c.pn||!c.wk) return false;
   try{ if(id!==await idOf(c.pn)) return false; }catch(e){ return false; }
-  const old=PL[id]; if(old&&old.pub&&old.pub!==c.pub) return false; if(old&&(old.ms||0)>=(c.ms||0)) return false;
+  if(ME&&id===ME.id&&ME.pub&&c.pub!==ME.pub){ conflict(); return false; } const old=PL[id]; if(old&&old.pub&&old.pub!==c.pub) return false; if(old&&(old.ms||0)>=(c.ms||0)) return false;
   if(!(await verifyBody(c))) return false;
   PL[id]=c; plSave(); try{ localStorage.setItem('uh60_acct_'+id,JSON.stringify({nm:c.nm,gh:c.gh,pub:c.pub,wk:c.wk,reg:c.reg})); }catch(e){} plNotify(); return true;
 }
+let conflicted=false; function conflict(){ if(conflicted) return; conflicted=true; try{ window.dispatchEvent(new CustomEvent('uh60conflict')); }catch(e){} try{ alert('このプレイヤー名は別のアカウントが先に登録されています。ログアウトして別のプレイヤー名で登録してください。'); }catch(e){} }
 const dbShim={
   collection(name){ if(name!=='players') throw new Error('unsupported'); return { onSnapshot(cb){ plSubs.push(cb); setTimeout(function(){ cb(snapshot()); },0); return function(){ const i=plSubs.indexOf(cb); if(i>=0) plSubs.splice(i,1); }; } }; },
   doc(path){ const id=String(path).split('/')[1];
@@ -505,7 +508,8 @@ const dbShim={
       async set(body){
         if(!ME||id!==ME.id||!PRIV) throw Object.assign(new Error('forbidden'),{code:'invalid_argument'});
         const c=clean(Object.assign({},body,{nm:ME.name,gh:ME.gh||'',pn:ME.pn,pub:ME.pub,wk:ME.wk,reg:ME.reg})); c.ms=Date.now(); c.sg=await signBody(PRIV,c);
-        PL[id]=c; plSave(); plNotify(); gossipNow();
+        if(PL[id]&&PL[id].pub&&PL[id].pub!==ME.pub){ conflict(); throw Object.assign(new Error('conflict'),{code:'invalid_argument'}); }
+        PL[id]=c; plSave(); plNotify(); MQ.pub(acctTopic(id),JSON.stringify(c),true);
       }
     }; }
 };
@@ -518,118 +522,132 @@ const userShim={
   async profiles(ids){ const o={}; ids.forEach(function(i){ const p=PL[i]; o[i]=p&&p.nm?{name:p.nm,avatarUrl:ghUrl(p.gh)}:(ME&&i===ME.id?{name:ME.name,avatarUrl:ghUrl(ME.gh)}:{name:''}); }); return o; },
   async search(q){ q=String(q||'').trim().toLowerCase().replace(/^@/,''); const out=[];
     Object.keys(PL).forEach(function(id){ const p=PL[id]; if(ME&&id===ME.id) return; if(!q||p.pn===q||(p.nm&&p.nm.toLowerCase().indexOf(q)>=0)||(p.pn&&p.pn.indexOf(q)>=0)) out.push({id:id,name:(p.nm||'プレイヤー')+(p.pn?'  @'+p.pn:''),avatarUrl:ghUrl(p.gh)}); });
-    if(/^[a-z0-9_]{3,16}$/.test(q)&&CR&&(!ME||q!==ME.pn)){ const id=await idOf(q); if(!PL[id]) out.unshift({id:id,name:'@'+q+'（未確認）',avatarUrl:''}); }
+    if(!out.length&&/^[a-z0-9_]{3,16}$/.test(q)&&CR&&(!ME||q!==ME.pn)){ const id=await idOf(q); if(!PL[id]) out.unshift({id:id,name:'@'+q+'（未確認）',avatarUrl:''}); }
     return out.slice(0,12); }
 };
 
-/* ---------- hub room over PeerJS ---------- */
+/* ===================== MQTT-over-WebSocket transport (public brokers; no server of our own) ===================== */
+const NS='uh60ja/v2/';
+const PEER='p'+rid(9);
+function lobbyName(){ let ln=''; try{ ln=(new URLSearchParams(location.search).get('lobby')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,24); }catch(e){} return ln||'public'; }
+const MQ=(function(){
+  let BR=['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt','wss://test.mosquitto.org:8081/mqtt'];
+  try{ const b=new URLSearchParams(location.search).get('broker'); if(b&&/^wss?:\/\//.test(b)) BR=[b]; }catch(e){}
+  const M={ok:false}; let ws=null, bi=0, buf=new Uint8Array(0), pingT=0, retryT=0, connT=0, tries=0, pid=1, st='connecting', last=0, usedBroker='';
+  const subs=new Map(), fns=[], retQ=new Map(), waiters=[];
+  const cid='uh'+rid(14), willTopic=NS+'r/lobby-'+lobbyName()+'/p/'+PEER;
+  function u8(a){ return a instanceof Uint8Array?a:new Uint8Array(a); }
+  function cat(list){ let n=0; list.forEach(function(x){ n+=x.length; }); const o=new Uint8Array(n); let p=0; list.forEach(function(x){ o.set(x,p); p+=x.length; }); return o; }
+  function lenPrefix(b){ return cat([new Uint8Array([b.length>>8,b.length&255]),b]); }
+  function rl(n){ const a=[]; do{ let d=n%128; n=Math.floor(n/128); if(n>0) d|=128; a.push(d); }while(n>0); return new Uint8Array(a); }
+  function pkt(h,body){ return cat([new Uint8Array([h]),rl(body.length),body]); }
+  function send(p){ if(ws&&ws.readyState===1){ try{ ws.send(p); return true; }catch(e){} } return false; }
+  function status(){ return st==='ok'?{ok:true,text:'接続OK（'+usedBroker.replace(/^wss?:\/\//,'').replace(/[:\/].*$/,'')+'）'}:st==='down'?{ok:false,text:'接続できません。再試行中…（オフラインでも端末内のデータで遊べます）'}:{ok:false,text:'接続中…'}; }
+  function setSt(s){ if(st===s) return; st=s; M.ok=(s==='ok'); const x=status(); fns.slice().forEach(function(f){ try{ f(x); }catch(e){} }); if(s==='ok'){ waiters.splice(0).forEach(function(w){ w(true); }); } }
+  function match(f,t){ if(f===t) return true; const a=f.split('/'), b=t.split('/'); for(let i=0;i<a.length;i++){ if(a[i]==='#') return true; if(i>=b.length) return false; if(a[i]!=='+'&&a[i]!==b[i]) return false; } return a.length===b.length; }
+  function connect(){
+    clearTimeout(retryT); clearTimeout(connT); if(ws){ try{ ws.onclose=null; ws.close(); }catch(e){} ws=null; }
+    const url=BR[bi%BR.length]; let w; try{ w=new WebSocket(url,'mqtt'); }catch(e){ fail(); return; }
+    ws=w; w.binaryType='arraybuffer'; buf=new Uint8Array(0); let acked=false;
+    connT=setTimeout(function(){ if(!acked) fail(); },6500);
+    w.onopen=function(){
+      const flags=0x02|0x04|0x20; // clean session + will + will retain
+      const vh=cat([lenPrefix(TE.encode('MQTT')),new Uint8Array([4,flags,0,25])]);
+      const pl=cat([lenPrefix(TE.encode(cid)),lenPrefix(TE.encode(willTopic)),lenPrefix(new Uint8Array(0))]);
+      send(pkt(0x10,cat([vh,pl])));
+    };
+    w.onmessage=function(ev){ buf=cat([buf,u8(ev.data)]); parse(function(){ acked=true; clearTimeout(connT); usedBroker=url; tries=0; }); };
+    w.onclose=function(){ if(ws!==w) return; clearTimeout(connT); clearInterval(pingT); ok(false); fail(); };
+    w.onerror=function(){};
+  }
+  function ok(v){ if(!v&&st==='ok') setSt('connecting'); }
+  function fail(){ clearInterval(pingT); if(ws){ try{ ws.onclose=null; ws.close(); }catch(e){} ws=null; } tries++; bi++; if(tries>=BR.length) setSt('down'); else if(st==='ok') setSt('connecting'); clearTimeout(retryT); retryT=setTimeout(connect,Math.min(600*tries,6000)); }
+  function parse(onAck){
+    for(;;){
+      if(buf.length<2) return; let mul=1,len=0,i=1,b; do{ if(i>=buf.length) return; b=buf[i++]; len+=(b&127)*mul; mul*=128; }while(b&128&&i<5);
+      if(buf.length<i+len) return; const h=buf[0], body=buf.subarray(i,i+len); buf=buf.slice(i+len); const t=h>>4;
+      if(t===2){ if(body[1]===0){ onAck(); setSt('ok'); subs.forEach(function(s,f){ sendSub(f); }); retQ.forEach(function(v,k){ sendPub(k,v.p,v.r); }); retQ.clear(); clearInterval(pingT); pingT=setInterval(function(){ send(new Uint8Array([0xC0,0])); },15000); } else fail(); }
+      else if(t===3){ const tl=(body[0]<<8)|body[1], topic=TD.decode(body.subarray(2,2+tl)); let p=2+tl; if((h>>1)&3) p+=2; const payload=TD.decode(body.subarray(p)); last=Date.now();
+        subs.forEach(function(set,f){ if(match(f,topic)) set.slice().forEach(function(fn){ try{ fn(topic,payload); }catch(e){ console.error(e); } }); }); }
+    }
+  }
+  function sendSub(f){ const id=pid++; if(pid>65000) pid=1; send(pkt(0x82,cat([new Uint8Array([id>>8,id&255]),lenPrefix(TE.encode(f)),new Uint8Array([0])]))); }
+  function sendPub(topic,payload,retain){ const t=lenPrefix(TE.encode(topic)); return send(pkt(0x30|(retain?1:0),cat([t,TE.encode(payload)]))); }
+  M.sub=function(f,fn){ let s=subs.get(f); if(!s){ s=[]; subs.set(f,s); if(M.ok) sendSub(f); } s.push(fn); };
+  M.unsub=function(f,fn){ const s=subs.get(f); if(!s) return; const i=s.indexOf(fn); if(i>=0) s.splice(i,1); if(!s.length){ subs.delete(f); if(M.ok){ const id=pid++; send(pkt(0xA2,cat([new Uint8Array([id>>8,id&255]),lenPrefix(TE.encode(f))]))); } } };
+  M.pub=function(topic,payload,retain){ if(M.ok&&sendPub(topic,payload,retain)) return true; if(retain) retQ.set(topic,{p:payload,r:1}); return false; };
+  M.onStatus=function(f){ fns.push(f); };
+  M.status=status;
+  M.waitOk=function(ms){ if(M.ok) return Promise.resolve(true); return new Promise(function(res){ let done=false; const t=setTimeout(function(){ if(!done){ done=true; res(false); } },ms); waiters.push(function(v){ if(!done){ done=true; clearTimeout(t); res(v); } }); }); };
+  M.age=function(){ return last?Date.now()-last:1e9; };
+  connect();
+  window.addEventListener('online',function(){ tries=0; if(!M.ok) connect(); });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&!M.ok){ tries=0; connect(); } });
+  window.addEventListener('pagehide',function(){ try{ if(ws&&ws.readyState===1){ sendPub(willTopic,'',1); send(new Uint8Array([0xE0,0])); } }catch(e){} });
+  return M;
+})();
+window.__mqOn=function(f){ MQ.onStatus(f); f(MQ.status()); };
+
+/* ---------- accounts on the broker: one retained, signed record per account ---------- */
+const acctTopic=function(id){ return NS+'acct/'+id; };
+async function fetchAccount(id){
+  return new Promise(function(res){
+    let found=null, done=false;
+    const fn=function(t,p){ if(!p||found) return; try{ const c=clean(JSON.parse(p)); if(c) found=c; }catch(e){} };
+    MQ.sub(acctTopic(id),fn);
+    setTimeout(async function(){ if(done) return; done=true; MQ.unsub(acctTopic(id),fn);
+      if(found&&found.sg&&found.pub&&found.pn&&found.wk){ try{ if((await idOf(found.pn))===id&&(await verifyBody(found))){ res(found); return; } }catch(e){} } res(null); },1800);
+  });
+}
+async function publishNew(a,pw){
+  const c=clean({pts:200,tot:200,rating:1000,w:0,l:0,k:0,dth:0,unlocked:['uh60ja'],friends:[],ign:[],veh:'uh60ja',hist:[],nm:a.name,gh:a.gh,pn:a.pn,pub:a.pub,wk:a.wk,reg:a.reg}); c.ms=Date.now(); c.sg=await signBody(PRIV,c);
+  MQ.pub(acctTopic(a.id),JSON.stringify(c),true); PL[a.id]=c; plSave();
+}
+let acctSub=false;
+function startAccounts(){ if(acctSub) return; acctSub=true; MQ.sub(NS+'acct/+',function(t,p){ if(!p) return; const id=t.slice(t.lastIndexOf('/')+1); try{ accept(id,JSON.parse(p)); }catch(e){} }); }
+
+/* ---------- rooms: presence + events multiplexed over the single MQTT connection ---------- */
 function makeRoom(name,isLobby){
-  const hubId=PFX+name;
-  const R={}; let peer=null, conn=null, mode='', open=false, dead=false, myPeer='', rt=0;
-  const peers=new Map(), clients=new Map(), handlers=new Map(), subs=[]; let myPres={}, notT=0, joined=[], left=[], updated=[];
-  const selfEntry=function(){ return {peer:myPeer,by:ME.id,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:myPres,updatedAt:Date.now()}; };
-  function list(){ const a=[]; peers.forEach(function(p,id){ a.push(Object.assign({},p,{isMe:id===myPeer,sameTab:id===myPeer})); }); return a; }
-  function notify(kind,p){
-    if(kind==='j') joined.push(p); else if(kind==='l') left.push(p); else updated.push(p);
-    if(notT) return; notT=setTimeout(function(){ notT=0; const ch={peers:list(),joined:joined,left:left,updated:updated}; joined=[]; left=[]; updated=[]; subs.slice().forEach(function(f){ try{ f(ch); }catch(e){ console.error(e); } }); },16);
-  }
-  function deliver(from,topic,data){ const hs=handlers.get(topic); if(!hs) return; const p=peers.get(from)||{}; const m={topic:topic,data:data,peer:from,by:p.by||null,isMe:from===myPeer,sameTab:from===myPeer,kind:'viewer',guest:false}; hs.slice().forEach(function(f){ try{ f(m); }catch(e){ console.error(e); } }); }
-  function bcast(msg,except){ clients.forEach(function(c,id){ if(id!==except&&c.open){ try{ c.send(msg); }catch(e){} } }); }
-  function setOpen(v){ if(open===v) return; open=v; }
-
-  function startHost(p){
-    mode='host'; peer=p; myPeer=p.id; peers.clear(); peers.set(myPeer,selfEntry()); setOpen(true);
-    p.on('connection',function(c){
-      c.on('data',function(msg){
-        if(!msg||typeof msg!=='object') return;
-        if(msg.k==='hello'){ const by=String(msg.uid||'').slice(0,40); const ent={peer:c.peer,by:by,presence:{},updatedAt:Date.now(),kind:'viewer',guest:false}; peers.set(c.peer,ent); clients.set(c.peer,c);
-          try{ c.send({k:'snap',you:c.peer,peers:Array.from(peers.values()).map(function(e){ return {peer:e.peer,by:e.by,presence:e.presence}; })}); }catch(e){}
-          bcast({k:'pu',peer:c.peer,by:by,presence:{}},c.peer); notify('j',ent); }
-        else if(msg.k==='pres'){ const e=peers.get(c.peer); if(!e||typeof msg.p!=='object') return; e.presence=msg.p; e.updatedAt=Date.now(); bcast({k:'pu',peer:c.peer,by:e.by,presence:msg.p},c.peer); notify('u',e); }
-        else if(msg.k==='emit'){ const e=peers.get(c.peer); if(!e||typeof msg.topic!=='string') return; bcast({k:'em',peer:c.peer,by:e.by,topic:msg.topic,data:msg.data},c.peer); deliver(c.peer,msg.topic,msg.data); }
-      });
-      const gone=function(){ if(!clients.has(c.peer)) return; clients.delete(c.peer); const e=peers.get(c.peer); peers.delete(c.peer); bcast({k:'pl',peer:c.peer},c.peer); if(e) notify('l',e); };
-      c.on('close',gone); c.on('error',gone);
-    });
-    p.on('disconnected',function(){ try{ p.reconnect(); }catch(e){} });
-    p.on('error',function(e){ console.warn('hub host',e&&e.type); });
-    notify('j',peers.get(myPeer));
-  }
-  function startClient(p){
-    mode='client'; peer=p; myPeer=p.id; let opened=false;
-    const c=p.connect(hubId,{reliable:true,serialization:'json'}); conn=c;
-    const fail=setTimeout(function(){ if(!opened) retry(); },7000);
-    c.on('open',function(){ opened=true; clearTimeout(fail); setOpen(true); try{ c.send({k:'hello',uid:ME.id}); c.send({k:'pres',p:myPres}); }catch(e){} });
-    c.on('data',function(msg){
-      if(!msg||typeof msg!=='object') return;
-      if(msg.k==='snap'){ myPeer=msg.you||myPeer; const old=Array.from(peers.keys()); peers.clear(); msg.peers.forEach(function(e){ peers.set(e.peer,{peer:e.peer,by:e.by,presence:e.presence||{},updatedAt:Date.now(),kind:'viewer',guest:false}); }); peers.set(myPeer,Object.assign(peers.get(myPeer)||{},selfEntry())); peers.forEach(function(e,id){ if(old.indexOf(id)<0) notify('j',e); }); }
-      else if(msg.k==='pu'){ const had=peers.has(msg.peer); const e={peer:msg.peer,by:msg.by,presence:msg.presence||{},updatedAt:Date.now(),kind:'viewer',guest:false}; peers.set(msg.peer,e); notify(had?'u':'j',e); }
-      else if(msg.k==='pl'){ const e=peers.get(msg.peer); peers.delete(msg.peer); if(e) notify('l',e); }
-      else if(msg.k==='em'){ if(typeof msg.topic==='string') deliver(msg.peer,msg.topic,msg.data); }
-    });
-    const lost=function(){ clearTimeout(fail); if(mode==='client'&&conn===c) retry(); };
-    c.on('close',lost); c.on('error',lost);
-    p.on('error',function(e){ if(e&&e.type==='peer-unavailable'){ clearTimeout(fail); retry(); } });
-  }
-  function teardown(){ setOpen(false); const e=Array.from(peers.values()); peers.clear(); clients.clear(); e.forEach(function(x){ if(x.peer!==myPeer) notify('l',x); }); try{ conn&&conn.close(); }catch(x){} try{ peer&&peer.destroy(); }catch(x){} peer=null; conn=null; mode=''; }
-  function retry(){ if(dead) return; teardown(); clearTimeout(rt); rt=setTimeout(start,200+Math.random()*1200); }
-  function start(){
-    if(dead||peer) return;
-    if(typeof Peer==='undefined'){ rt=setTimeout(start,1500); return; }
-    let p; try{ p=new Peer(hubId,{debug:0}); }catch(e){ rt=setTimeout(start,3000); return; }
-    peer=p; let settled=false;
-    p.on('open',function(){ if(settled) return; settled=true; startHost(p); });
-    p.on('error',function(e){ if(settled) return; const t=e&&e.type;
-      if(t==='unavailable-id'){ settled=true; try{ p.destroy(); }catch(x){} peer=null; const q=new Peer({debug:0}); peer=q; q.on('open',function(){ startClient(q); }); q.on('error',function(){ if(!open) retry(); }); }
-      else { settled=true; retry(); } });
-  }
-  function sendMine(){ if(mode==='host'){ const e=peers.get(myPeer); if(e){ e.presence=myPres; e.updatedAt=Date.now(); } bcast({k:'pu',peer:myPeer,by:ME.id,presence:myPres}); if(e) notify('u',e); }
-    else if(mode==='client'&&conn&&conn.open){ try{ conn.send({k:'pres',p:myPres}); }catch(e){} const s=peers.get(myPeer); if(s){ s.presence=myPres; notify('u',s); } } }
-
-  R.connected=function(){ return open; };
-  R.peers=function(){ return list(); };
-  R.presence=async function(patch){ const n=Object.assign({},myPres); Object.keys(patch||{}).forEach(function(k){ if(patch[k]===null) delete n[k]; else n[k]=patch[k]; }); myPres=n; sendMine(); };
-  R.emit=async function(topic,data){
-    if(!open) return;
-    if(mode==='host'){ bcast({k:'em',peer:myPeer,by:ME.id,topic:topic,data:data}); }
-    else if(conn&&conn.open){ try{ conn.send({k:'emit',topic:topic,data:data}); }catch(e){} }
-    deliver(myPeer,topic,data);
+  const base=NS+'r/'+(isLobby?'lobby-':'')+name+'/', R={}, peers=new Map(), handlers=new Map(), subs=[];
+  let myPres={}, dead=false, notT=0, joined=[], left=[], updated=[], lastP=0, pT=0;
+  const TO=isLobby?16000:5500;
+  const selfE=function(){ return {peer:PEER,by:ME.id,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:myPres,updatedAt:Date.now()}; };
+  function list(){ const a=[selfE()]; peers.forEach(function(p){ a.push(Object.assign({},p,{isMe:false,sameTab:false})); }); return a; }
+  function notify(k,p){ if(k==='j') joined.push(p); else if(k==='l') left.push(p); else updated.push(p); if(notT) return;
+    notT=setTimeout(function(){ notT=0; const ch={peers:list(),joined:joined,left:left,updated:updated}; joined=[]; left=[]; updated=[]; subs.slice().forEach(function(f){ try{ f(ch); }catch(e){ console.error(e); } }); },16); }
+  function deliver(topic,data,peer,by,isMe){ const hs=handlers.get(topic); if(!hs) return; const m={topic:topic,data:data,peer:peer,by:by,isMe:isMe,sameTab:isMe,kind:'viewer',guest:false}; hs.slice().forEach(function(f){ try{ f(m); }catch(e){ console.error(e); } }); }
+  function pubPres(retain,hi){ lastP=Date.now(); MQ.pub(base+'p/'+PEER,JSON.stringify({b:ME.id,p:myPres,hi:hi?1:0}),!!(retain&&isLobby)); }
+  const onP=function(t,pl){
+    const id=t.slice(t.lastIndexOf('/')+1); if(id===PEER) return;
+    if(!pl){ const e=peers.get(id); if(e){ peers.delete(id); notify('l',e); } return; }
+    let o; try{ o=JSON.parse(pl); }catch(e){ return; } if(!o||typeof o!=='object') return;
+    const had=peers.get(id), e={peer:id,by:String(o.b||'').slice(0,40),presence:(o.p&&typeof o.p==='object')?o.p:{},seen:Date.now(),updatedAt:Date.now(),kind:'viewer',guest:false};
+    peers.set(id,e); notify(had?'u':'j',e); if(!had||o.hi) pubPres(false,false);
   };
+  const onE=function(t,pl){ const topic=t.slice(t.lastIndexOf('/')+1); let o; try{ o=JSON.parse(pl); }catch(e){ return; } if(!o||o.p===PEER) return; const e=peers.get(o.p); if(e) e.seen=Date.now(); deliver(topic,o.d,o.p,String(o.b||'').slice(0,40),false); };
+  MQ.sub(base+'p/+',onP); MQ.sub(base+'e/+',onE);
+  MQ.onStatus(function(s){ if(s.ok&&!dead){ setTimeout(function(){ pubPres(true,true); },250); } });
+  const iv=setInterval(function(){ const n=Date.now(); peers.forEach(function(e,id){ if(n-e.seen>TO){ peers.delete(id); notify('l',e); } }); if(MQ.ok) pubPres(true,false); },isLobby?4000:1200);
+  if(MQ.ok) setTimeout(function(){ pubPres(true,true); },120);
+  R.connected=function(){ return MQ.ok; };
+  R.peers=function(){ return list(); };
+  R.presence=async function(patch){ const n=Object.assign({},myPres); Object.keys(patch||{}).forEach(function(k){ if(patch[k]===null) delete n[k]; else n[k]=patch[k]; }); myPres=n; notify('u',selfE());
+    const dt=Date.now()-lastP; if(dt>=45){ pubPres(false,false); } else if(!pT){ pT=setTimeout(function(){ pT=0; pubPres(false,false); },45-dt); } };
+  R.emit=async function(topic,data){ if(dead) return; MQ.pub(base+'e/'+topic,JSON.stringify({p:PEER,b:ME.id,d:data}),false); deliver(topic,data,PEER,ME.id,true); };
   R.on=function(topic,fn){ let a=handlers.get(topic); if(!a){ a=[]; handlers.set(topic,a); } a.push(fn); return function(){ const i=a.indexOf(fn); if(i>=0) a.splice(i,1); }; };
   R.onPeers=function(fn){ subs.push(fn); return function(){ const i=subs.indexOf(fn); if(i>=0) subs.splice(i,1); }; };
-  R.leave=function(){ dead=true; clearTimeout(rt); teardown(); };
+  R.leave=function(){ if(dead) return; dead=true; clearInterval(iv); clearTimeout(pT); MQ.pub(base+'p/'+PEER,'',!!isLobby); MQ.unsub(base+'p/+',onP); MQ.unsub(base+'e/+',onE); };
   R.join=async function(n){ n=String(n).toLowerCase().replace(/[^a-z0-9_.-]/g,'').slice(0,40); const r=makeRoom(n,false); await r._ready(); return r; };
-  R._ready=function(){ return new Promise(function(res){ let t=0; const iv=setInterval(function(){ if(open||++t>40){ clearInterval(iv); res(); } },150); }); };
-  R._gossip=function(){ if(!open||!isLobby) return; if(PL[ME.id]) R.emit('_prof',{id:ME.id,d:PL[ME.id]}); const ks=Object.keys(PL).filter(function(k){ return k!==ME.id; }); for(let i=0;i<Math.min(3,ks.length);i++){ const k=ks[Math.floor(Math.random()*ks.length)]; R.emit('_prof',{id:k,d:PL[k]}); } };
-  start();
+  R._ready=function(){ return MQ.waitOk(8000).then(function(){ return new Promise(function(res){ setTimeout(res,350); }); }); };
   return R;
 }
-
-function lobbyName(){ let ln=''; try{ ln=(new URLSearchParams(location.search).get('lobby')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,24); }catch(e){} return 'lobby-'+(ln||'public'); }
-/* ask the lobby whether an account exists (returns the verified public record or null) */
-async function probe(id){
-  let R=null, found=null; try{ R=makeRoom(lobbyName(),false); await R._ready(); if(!R.connected()){ R.leave(); return null; }
-    const pend=[]; R.on('_prof',function(m){ if(m.data&&m.data.id===id&&m.data.d&&!found) pend.push(m.data.d); });
-    const ask=function(){ R.emit('_want',{id:id}); R.emit('_want',{id:id}); }; ask();
-    for(let i=0;i<20&&!found;i++){ await new Promise(function(r){ setTimeout(r,500); }); while(pend.length&&!found){ const c=clean(pend.shift()); if(c&&c.sg&&c.pub&&c.pn&&c.wk&&(await idOf(c.pn))===id&&(await verifyBody(c))) found=c; } if(i===8&&!found) ask(); }
-  }catch(e){} try{ R&&R.leave(); }catch(e){} return found;
-}
 let lobby=null;
-function gossipNow(){ if(lobby) lobby._gossip(); }
-async function lobbyRoom(){
-  await login(); if(lobby) return lobby;
-  lobby=makeRoom(lobbyName(),true);
-  lobby.on('_prof',function(m){ if(!m.isMe&&m.data&&m.data.id) accept(m.data.id,m.data.d); });
-  lobby.on('_want',function(m){ if(m.isMe||!m.data) return; const id=m.data.id; if(PL[id]) lobby.emit('_prof',{id:id,d:PL[id]}); });
-  lobby.onPeers(function(ch){ if(ch.joined.some(function(p){ return !p.isMe; })) setTimeout(gossipNow,300); });
-  setInterval(gossipNow,15000);
-  return lobby;
-}
+async function lobbyRoom(){ await login(); if(lobby) return lobby; startAccounts(); lobby=makeRoom(lobbyName(),true); return lobby; }
 
 window.__logout=logout;
 window.claude={ async use(name){
   if(name==='user') return userShim;
-  if(name==='db'){ await login(); return dbShim; }
+  if(name==='db'){ await login(); startAccounts(); return dbShim; }
   if(name==='room') return lobbyRoom();
   return null;
 } };
@@ -1431,12 +1449,20 @@ function rotorHead(P,g,y,z,rad,blades,parked,tipMat){
   const hub=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.3,14),HM.dark); hub.castShadow=true; rg.add(hub);
   const sw=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.06,16),HM.steel); sw.position.y=-.25; rg.add(sw);
   P.rotorSpin=new THREE.Group(); rg.add(P.rotorSpin);
-  const bg=new THREE.BoxGeometry(rad-.7,.04,.46);
+  const hubTop=new THREE.Mesh(new THREE.CylinderGeometry(.2,.26,.12,14),HM.steel); hubTop.position.y=.2; rg.add(hubTop);
+  const sc=new THREE.Mesh(new THREE.CylinderGeometry(.5,.46,.1,16),HM.dark); sc.position.y=-.18; rg.add(sc);       // swashplate
+  const L1=rad*.74, L2=rad-.7-L1-.42;
+  const gIn=new THREE.BoxGeometry(L1,.05,.52), gOut=new THREE.BoxGeometry(L2,.04,.45), gTip=new THREE.BoxGeometry(.42,.04,.47), gLE=new THREE.BoxGeometry(rad-.85,.02,.04), gTE=new THREE.BoxGeometry(rad-1.1,.015,.05), gStripe=new THREE.BoxGeometry(.2,.052,.5);
   for(let i=0;i<blades;i++){
     const piv=new THREE.Group(); piv.rotation.y=i*Math.PI*2/blades; piv.rotation.z=parked?-.06:.035;
-    const bl=new THREE.Mesh(bg,HM.dark); bl.position.x=.7+(rad-.7)/2; bl.castShadow=!parked; piv.add(bl);
-    const tp=new THREE.Mesh(new THREE.BoxGeometry(.5,.05,.46),tipMat||HM.yellow); tp.position.x=rad-.25; piv.add(tp);
-    const cf=new THREE.Mesh(bgeo(.8,.12,.34),HM.olive2); cf.position.x=.55; piv.add(cf);
+    const a=new THREE.Mesh(gIn,HM.dark); a.position.x=.7+L1/2; a.castShadow=!parked; piv.add(a);
+    const b=new THREE.Mesh(gOut,HM.dark); b.position.set(.7+L1+L2/2,-.003,.01); b.rotation.x=.012; piv.add(b);
+    const tp=new THREE.Mesh(gTip,tipMat||HM.yellow); tp.position.set(rad-.21,-.006,.04); tp.rotation.y=-.2; piv.add(tp);
+    const le=new THREE.Mesh(gLE,HM.steel); le.position.set(.7+(rad-.85)/2,.003,.255); piv.add(le);                          // abrasion strip
+    const te=new THREE.Mesh(gTE,HM.rubber); te.position.set(.7+(rad-1.1)/2,-.004,-.26); piv.add(te);                         // trailing tab
+    const st=new THREE.Mesh(gStripe,HM.red); st.position.set(rad-.85,.001,.0); piv.add(st);                                 // tip stripe
+    const cf=new THREE.Mesh(bgeo(.8,.14,.36),HM.steel); cf.position.x=.5; piv.add(cf);                                       // root cuff
+    const pl=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.34,6),HM.metal); pl.position.set(.38,-.16,.12); piv.add(pl);  // pitch link
     P.rotorSpin.add(piv);
   }
   P.rotorDisc=new THREE.Mesh(new THREE.CircleGeometry(rad+.2,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x1b1b1b,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); rg.add(P.rotorDisc);
@@ -1449,6 +1475,55 @@ function tailRotor(P,g,x,y,z,len){
   P.tailDisc=new THREE.Mesh(new THREE.CircleGeometry(len/2,24).rotateY(Math.PI/2),new THREE.MeshBasicMaterial({color:0x222222,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); trg.add(P.tailDisc);
 }
 function crewHead(B,x,y,z,helm){ B.add(new THREE.SphereGeometry(.12,10,8),'skin',[x,y,z]); B.add(new THREE.SphereGeometry(.155,12,8,0,Math.PI*2,0,Math.PI/2+.3),helm||'helmW',[x,y+.04,z-.01]); B.add(bgeo(.2,.07,.1),'visor',[x,y,z+.14]); B.add(bgeo(.34,.34,.24),'suit',[x,y-.34,z-.05]); }
+
+
+/* ---------- decals (canvas text planes) and extra detail passes ---------- */
+function decal(g,txt,w,h,x,y,z,side,col,font){
+  const tex=canvasTex(256,Math.max(32,Math.round(256*h/w)),function(c,W,Hh){ c.clearRect(0,0,W,Hh); c.fillStyle=col||'rgba(235,235,225,.92)'; c.font=(font||'700 ')+Math.round(Hh*.7)+'px "Noto Sans JP",sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(txt,W/2,Hh/2+2); });
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,side:THREE.DoubleSide}));
+  m.position.set(x,y,z); m.rotation.y=side*Math.PI/2; g.add(m); return m;
+}
+function addDecals(g,vid){
+  const D={uh60ja:[[-5.2,2.35,.5,'陸上自衛隊',1.5,.3],[-6.4,2.05,.5,'41802',.9,.22]],uh60j:[[-5.2,2.35,.5,'航空自衛隊',1.5,.3],[-6.4,2.05,.5,'救難',.9,.22]],
+    ah64:[[-5.6,3.02,.45,'陸上自衛隊',1.3,.26],[-6.8,2.76,.35,'73501',.8,.2]],oh1:[[-3.6,2.6,.5,'陸上自衛隊',1.0,.22],[-4.6,2.4,.4,'32501',.6,.17]]}[vid]||[];
+  D.forEach(function(d){ [1,-1].forEach(function(s){ decal(g,d[3],d[4],d[5],s*d[2],d[1],d[0],s,'rgba(235,235,225,.9)'); }); });
+}
+function detailAH(B,cy,bx,HP){
+  [1,-1].forEach(function(s){
+    for(let j=0;j<2;j++) for(let k=0;k<2;k++){ const x=s*(2.3+k*.17), y=1.32+j*.18;
+      B.add(cy(0,.085,.42,8),'dark',[x,y,1.6],[HP,0,0]); B.add(bx(.02,.34,.2),'steel',[x,y,-.22]); B.add(bx(.34,.02,.2),'steel',[x,y,-.22]); }
+    B.add(cy(.215,.215,.07,14),'steel',[s*1.15,1.42,1.5],[HP,0,0]);                       // rocket pod nose ring
+    for(let i=0;i<7;i++){ const a=i*Math.PI*2/7; B.add(cy(.035,.035,.04,6),'dark',[s*1.15+Math.cos(a)*.12,1.42+Math.sin(a)*.12,1.74],[HP,0,0]); }
+    B.add(bx(.05,.12,.4),'dark',[s*2.84,1.86,.4]);                                         // wing-tip lamp housing
+    B.add(bx(.03,.05,4.2),'dark',[s*.7,2.34,2.6]);                                         // canopy sills
+    B.add(bx(.5,.18,.5),'steel',[s*.72,2.0,1.1]);                                           // sensor / ECM boxes
+    B.add(cy(.07,.09,.22,8),'dark',[s*.84,3.2,-2.02],[HP,0,0]);
+    B.add(bx(.04,.3,.6),'olive',[s*.42,2.92,-6.6]);                                         // boom strakes
+  });
+  B.add(bx(.5,.5,.12),'seat',[0,2.28,3.2]); B.add(bx(.5,.5,.12),'seat',[0,2.66,1.15]);
+  B.add(bx(.05,.4,.05),'steel',[0,1.8,4.75],[.5,0,0]); B.add(bx(.05,.3,.05),'steel',[0,3.02,.55]);   // wire cutters
+  B.add(bx(.4,.28,.5),'metal',[0,.88,3.25]); B.add(cy(.06,.06,.18,8),'dark',[0,.92,5.85],[HP,0,0]);  // ammo drum + muzzle brake
+  B.add(cy(.09,.09,.06,10),'visor',[.1,1.55,5.14],[HP,0,0]); B.add(cy(.07,.07,.06,10),'visor',[-.12,1.5,5.15],[HP,0,0]); B.add(cy(.06,.06,.06,10),'visor',[0,2.22,5.16],[HP,0,0]);   // TADS / PNVS lenses
+  B.add(cy(.4,.4,.14,14),'dark',[0,3.72,.1]);                                              // mast collar
+  B.add(cy(.1,.1,.34,8),'dark',[0,3.45,-2.1]);                                             // APU exhaust
+  B.add(bx(.08,.04,.5),'dark',[0,2.7,-6.0]); B.add(cy(.012,.012,.7,5),'steel',[.18,3.62,-3.2],[0,0,.3]);   // antennas
+}
+function detailOH(B,cy,bx,HP){
+  [1,-1].forEach(function(s){
+    B.add(cy(0,.1,.45,8),'dark',[s*1.85,1.62,1.34],[HP,0,0]);                              // AAM nose cones + fins
+    B.add(bx(.02,.3,.2),'steel',[s*1.85,1.62,-.4]); B.add(bx(.3,.02,.2),'steel',[s*1.85,1.62,-.4]);
+    B.add(cy(.2,.2,.05,12),'dark',[s*.5,2.86,.18],[HP,0,0]);                              // intake grilles
+    B.add(cy(.17,.17,.05,10),'steel',[s*.5,2.8,-1.88],[HP,0,0]);                          // exhaust rim
+    B.add(bx(.03,.04,3.0),'dark',[s*.55,2.1,1.6]);                                          // canopy sills
+    B.add(bx(.04,.22,.6),'olive',[s*.28,2.62,-5.3]);                                        // boom strakes
+    B.add(bx(.18,.14,.3),'metal',[s*.55,1.16,2.2]);                                         // avionics fairings
+  });
+  B.add(bx(.04,.28,.04),'steel',[0,1.5,3.6],[.5,0,0]); B.add(cy(.012,.012,.6,5),'steel',[.1,2.78,-3.0],[0,0,.25]);
+  B.add(cy(.1,.1,.06,10),'visor',[0,3.6,.26],[HP,0,0]);                                      // mast-mounted sight lens
+  B.add(cy(.07,.07,.06,10),'visor',[0,1.55,3.5],[HP,0,0]);
+  B.add(cy(.05,.05,.16,8),'dark',[0,.95,4.45],[HP,0,0]);                                     // gun muzzle
+  B.add(bx(.5,.2,.4),'olive',[0,2.55,-.2]); B.add(cy(.14,.14,.4,10),'dark',[0,2.9,-.9],[HP,0,0]);  // transmission cover / APU
+}
 
 function buildAH64(parked){
   const g=new THREE.Group(); g.rotation.order='YXZ';
@@ -1482,6 +1557,7 @@ function buildAH64(parked){
   B.add(cy(.06,.05,.5,6),'metal',[0,.4,-7.7]); B.add(cy(.17,.17,.12,12),'tire',[0,.2,-7.7],[0,0,HP]);            // tail wheel
   B.add(bx(1.6,.05,.4),'dark',[0,3.28,-9.0]);                                                                     // strobe base
   [1,-1].forEach(function(s){ B.add(bx(.012,.03,5.5),'dark',[s*.915,2.7,-.2]); B.add(bx(.04,.3,.3),'steel',[s*.9,2.0,3.2]); });
+  detailAH(B,cy,bx,HP);
   B.build(HM,g,true,true);
   const hm=new THREE.MeshBasicMaterial({color:0xc4161c,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   [1,-1].forEach(function(s){ const h=new THREE.Mesh(new THREE.CircleGeometry(.26,22),hm); h.position.set(s*.925,2.6,-3.4); h.rotation.y=s*HP; g.add(h); });
@@ -1512,6 +1588,7 @@ function buildOH1(parked){
   B.add(bx(.3,.28,.6),'metal',[0,1.0,2.8]); B.add(cy(.04,.04,1.3,8),'metal',[0,.95,3.7],[HP,0,0]);                    // 20 mm nose gun
   B.add(new THREE.SphereGeometry(.2,10,8),'dark',[0,1.55,3.3]);
   B.add(bx(.09,1.6,1.2),'olive',[0,3.5,-6.35],[-.45,0,0]); B.add(bx(.3,.4,.3),'dark',[.15,2.85,-6.8]);
+  detailOH(B,cy,bx,HP);
   B.build(HM,g,true,true);
   const hm=new THREE.MeshBasicMaterial({color:0xc4161c,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   [1,-1].forEach(function(s){ const h=new THREE.Mesh(new THREE.CircleGeometry(.22,22),hm); h.position.set(s*.745,2.0,-1.2); h.rotation.y=s*HP; g.add(h); });
@@ -1523,9 +1600,9 @@ function buildOH1(parked){
   return P;
 }
 function buildHeliModel(parked,vid){
-  if(vid==='ah64') return buildAH64(parked);
-  if(vid==='oh1') return buildOH1(parked);
-  return buildUH60(parked,vid==='uh60j'?'rescue':'');
+  let P; if(vid==='ah64') P=buildAH64(parked); else if(vid==='oh1') P=buildOH1(parked); else P=buildUH60(parked,vid==='uh60j'?'rescue':'');
+  try{ addDecals(P.g,vid||'uh60ja'); }catch(e){ console.warn('decals',e); }
+  return P;
 }
 
 /* ===================== vehicles (unlockable with points) ===================== */
@@ -3443,6 +3520,7 @@ const Net={
     try{ const w=await this.user.can('data.write'); this.canWrite=(w!==false); }catch(e){}
     this.state='online'; this.note=window.__standalone?('プレイヤー名 @'+window.__standalone.pn+'（相手にこの名前を伝えると、フレンド検索に入力して追加できます）'):this.canWrite?'':'閲覧権限のため、ポイント・フレンドは保存されません（編集者・共同作業者として共有してもらってください）。';
     if(this.db) this.startDb(); if(this.room) this.startLobby();
+    if(window.__mqOn){ const base=this.note; window.__mqOn(function(s){ Net.state=s.ok?'online':'connecting'; Net.note=base+'［通信: '+s.text+'］'; Net.ui('state'); }); }
     this.ui('state');
   },
   /* ---------- database: profile, friends, ranking ---------- */
