@@ -384,55 +384,129 @@ body:not(.touch) #actions{opacity:.9}
 (function(){
 'use strict';
 const PFX='uh60ja-v1-';
+let SES=null; try{ SES=JSON.parse(localStorage.getItem('uh60_session')||'null'); }catch(e){}
+if(SES&&SES.id&&SES.pn&&SES.pub&&SES.wk&&SES.pk8) window.__LSPFX=SES.id+'_'; else SES=null;
 const KP=window.__LSPFX||'';
 const LS={ get(k){ try{ return JSON.parse(localStorage.getItem(KP+k)); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(KP+k,JSON.stringify(v)); }catch(e){} } };
 function rid(n){ const a='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
 const ghUrl=function(g){ return g?'https://github.com/'+encodeURIComponent(g)+'.png?size=80':''; };
 
-/* ---------- login ---------- */
-let loginP=null, ME=null;
+/* ---------- accounts: playerName + password. id = hash(playerName); profile is signed (ECDSA P-256);
+   the private key travels inside the profile wrapped with PBKDF2(password) + AES-GCM, so the same
+   account can be opened from another device once any peer that has seen it is online. ---------- */
+const CR=window.crypto&&window.crypto.subtle, TE=new TextEncoder(), TD=new TextDecoder();
+function b64(buf){ let s=''; const a=new Uint8Array(buf); for(let i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }
+function unb64(s){ const t=atob(s), a=new Uint8Array(t.length); for(let i=0;i<t.length;i++) a[i]=t.charCodeAt(i); return a; }
+async function idOf(pn){ const h=new Uint8Array(await CR.digest('SHA-256',TE.encode('uh60ja:'+pn))); let s='u_'; for(let i=0;i<22;i++) s+='abcdefghijklmnopqrstuvwxyz0123456789'[h[i]%36]; return s; }
+async function wrapKey(pass,salt){ const m=await CR.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveKey']); return CR.deriveKey({name:'PBKDF2',salt:salt,iterations:120000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
+async function sealPriv(pass,pkcs8){ const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)); const k=await wrapKey(pass,salt); const ct=await CR.encrypt({name:'AES-GCM',iv:iv},k,pkcs8); return {s:b64(salt),i:b64(iv),c:b64(ct)}; }
+async function openPriv(pass,wk){ const k=await wrapKey(pass,unb64(wk.s)); return CR.decrypt({name:'AES-GCM',iv:unb64(wk.i)},k,unb64(wk.c)); }
+async function impPriv(pkcs8){ return CR.importKey('pkcs8',pkcs8,{name:'ECDSA',namedCurve:'P-256'},false,['sign']); }
+async function impPub(b){ return CR.importKey('raw',unb64(b),{name:'ECDSA',namedCurve:'P-256'},false,['verify']); }
+function canon(o){ const k=Object.keys(o).filter(function(x){ return x!=='sg'; }).sort(); return JSON.stringify(k.map(function(x){ return [x,o[x]]; })); }
+async function signBody(priv,o){ return b64(await CR.sign({name:'ECDSA',hash:'SHA-256'},priv,TE.encode(canon(o)))); }
+async function verifyBody(o){ try{ return await CR.verify({name:'ECDSA',hash:'SHA-256'},await impPub(o.pub),unb64(o.sg),TE.encode(canon(o))); }catch(e){ return false; } }
+let PRIV=null, ME=null;
+if(SES) ME={id:SES.id,name:SES.nm,pn:SES.pn,gh:SES.gh||'',pub:SES.pub,wk:SES.wk,reg:SES.reg};
+function saveSession(a,privPkcs8,remember){ try{ localStorage.setItem('uh60_session',JSON.stringify({id:a.id,pn:a.pn,nm:a.name,gh:a.gh||'',pub:a.pub,wk:a.wk,reg:a.reg,pk8:remember?b64(privPkcs8):''})); }catch(e){} }
+function logout(){ try{ localStorage.removeItem('uh60_session'); }catch(e){} location.reload(); }
+let loginP=null;
+async function resumeKey(){ if(PRIV) return; if(SES&&SES.pk8){ try{ PRIV=await impPriv(unb64(SES.pk8)); }catch(e){} } }
+function loginUi(){
+  return new Promise(function(res){
+    const box=document.createElement('div');
+    const I='display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px;border-radius:8px;border:1px solid #2c4a30;background:#050a04;color:#eaffee;font-size:16px';
+    const L='font-size:12px;color:#7aa583';
+    box.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(4,7,3,.94);font-family:"Noto Sans JP",sans-serif;color:#cfe;padding:16px;overflow:auto';
+    box.innerHTML='<form style="width:min(400px,100%);background:#0b120a;border:1px solid rgba(141,255,166,.35);border-radius:12px;padding:20px;display:grid;gap:11px" autocomplete="on">'+
+      '<div style="font:700 18px/1.3 \'Chakra Petch\',sans-serif;color:#8dffa6;letter-spacing:.06em">PILOT LOGIN</div>'+
+      '<div style="display:flex;gap:6px"><button type="button" data-m="in" style="flex:1;padding:8px;border-radius:8px;border:1px solid #2c4a30;font:700 13px inherit;cursor:pointer">ログイン</button><button type="button" data-m="up" style="flex:1;padding:8px;border-radius:8px;border:1px solid #2c4a30;font:700 13px inherit;cursor:pointer">新規登録</button></div>'+
+      '<label class="u" style="'+L+'">表示名（対戦中に表示・日本語可）<input id="lg-d" maxlength="16" autocomplete="nickname" style="'+I+'"></label>'+
+      '<label style="'+L+'">プレイヤー名（ログインID：英数字と_ 3〜16文字）<input id="lg-n" maxlength="16" required autocomplete="username" autocapitalize="off" spellcheck="false" style="'+I+'"></label>'+
+      '<label style="'+L+'">パスワード（6文字以上）<input id="lg-p" type="password" minlength="6" maxlength="64" required autocomplete="current-password" style="'+I+'"></label>'+
+      '<label class="u" style="'+L+'">パスワード（確認）<input id="lg-p2" type="password" maxlength="64" autocomplete="new-password" style="'+I+'"></label>'+
+      '<label class="u" style="'+L+'">GitHubユーザー名（アイコン表示用・任意）<input id="lg-g" maxlength="39" autocapitalize="off" placeholder="octocat" style="'+I+'"></label>'+
+      '<label style="font-size:12px;color:#9bbf9f;display:flex;gap:8px;align-items:center"><input id="lg-r" type="checkbox" checked>この端末でログイン状態を保つ</label>'+
+      '<div id="lg-e" style="min-height:18px;font-size:12.5px;color:#ff9a8d"></div>'+
+      '<button type="submit" id="lg-ok" style="padding:12px;border:0;border-radius:8px;background:#8dffa6;color:#06210c;font:700 15px \'Noto Sans JP\',sans-serif;cursor:pointer"></button>'+
+      '<div style="font-size:11px;color:#6f8f74;line-height:1.6">サーバーを使わない仕組みのため、アカウントはパスワードで暗号化・署名され、遊んだ相手のブラウザ経由で他の端末からも開けます。パスワードを忘れると復元できません。</div></form>';
+    document.body.appendChild(box);
+    const q=function(s){ return box.querySelector(s); }; let mode='in';
+    function setMode(m){ mode=m; box.querySelectorAll('.u').forEach(function(e){ e.style.display=m==='up'?'block':'none'; }); q('#lg-ok').textContent=m==='up'?'登録して出撃':'ログイン';
+      box.querySelectorAll('[data-m]').forEach(function(b){ const on=b.dataset.m===m; b.style.background=on?'#16301b':'#060b05'; b.style.color=on?'#8dffa6':'#7aa583'; }); q('#lg-p').autocomplete=m==='up'?'new-password':'current-password'; q('#lg-e').textContent=''; }
+    box.querySelectorAll('[data-m]').forEach(function(b){ b.onclick=function(){ setMode(b.dataset.m); }; }); setMode('in');
+    setTimeout(function(){ try{ q('#lg-n').focus(); }catch(e){} },50);
+    const err=function(t){ q('#lg-e').textContent=t; q('#lg-ok').disabled=false; };
+    q('form').addEventListener('keydown',function(e){ e.stopPropagation(); });
+    q('form').addEventListener('submit',async function(e){
+      e.preventDefault(); if(!CR){ err('このブラウザは暗号機能(HTTPS)に対応していません'); return; }
+      const pn=q('#lg-n').value.trim().toLowerCase(), pw=q('#lg-p').value, rem=q('#lg-r').checked;
+      if(!/^[a-z0-9_]{3,16}$/.test(pn)){ err('プレイヤー名は英数字と_の3〜16文字です'); return; } if(pw.length<6){ err('パスワードは6文字以上です'); return; }
+      q('#lg-ok').disabled=true; q('#lg-e').style.color='#9bbf9f'; q('#lg-e').textContent=mode==='up'?'アカウントを作成中…':'ログイン中…'; q('#lg-e').style.color='#9bbf9f';
+      try{
+        const id=await idOf(pn);
+        if(mode==='up'){
+          if(pw!==q('#lg-p2').value){ q('#lg-e').style.color='#ff9a8d'; err('確認用パスワードが一致しません'); return; }
+          const dn=(q('#lg-d').value.trim()||pn).slice(0,16); let gh=q('#lg-g').value.trim().replace(/^@/,''); if(!/^[A-Za-z0-9-]{1,39}$/.test(gh)) gh='';
+          ME={id:id,pn:pn}; const exist=await probe(id); if(exist){ q('#lg-e').style.color='#ff9a8d'; err('そのプレイヤー名はすでに使われています'); return; }
+          const kp=await CR.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+          const pkcs8=await CR.exportKey('pkcs8',kp.privateKey), pub=b64(await CR.exportKey('raw',kp.publicKey)), wk=await sealPriv(pw,pkcs8);
+          const a={id:id,pn:pn,name:dn,gh:gh,pub:pub,wk:wk,reg:Date.now()}; saveSession(a,pkcs8,rem); PRIV=kp.privateKey; ME=a; try{ localStorage.removeItem(a.id+'_uh60ja.v2'); }catch(x){}
+          window.__fresh=true; box.remove(); res(a);
+        } else {
+          let rec=null; try{ rec=JSON.parse(localStorage.getItem('uh60_acct_'+id)||'null'); }catch(x){}
+          if(!rec){ ME={id:id,pn:pn}; q('#lg-e').textContent='アカウント情報を探しています（最大10秒）…'; const r=await probe(id); rec=r; }
+          if(!rec||!rec.wk||!rec.pub){ q('#lg-e').style.color='#ff9a8d'; err('アカウントが見つかりません。新規登録するか、このアカウントを遊んだ相手がオンラインの時に再度お試しください'); return; }
+          let pkcs8; try{ pkcs8=await openPriv(pw,rec.wk); }catch(x){ q('#lg-e').style.color='#ff9a8d'; err('パスワードが違います'); return; }
+          PRIV=await impPriv(pkcs8); const a={id:id,pn:pn,name:rec.nm||pn,gh:rec.gh||'',pub:rec.pub,wk:rec.wk,reg:rec.reg||0};
+          saveSession(a,pkcs8,rem); ME=a; box.remove(); res(a);
+        }
+      }catch(x){ console.error(x); q('#lg-e').style.color='#ff9a8d'; err('エラー: '+(x&&x.message||x)); }
+    });
+  });
+}
 function login(){
   if(loginP) return loginP;
-  loginP=new Promise(function(res){
-    let s=LS.get('uh60_login'); if(s&&s.id&&s.name){ ME=s; window.__standalone=s; return res(s); }
-    const box=document.createElement('div');
-    box.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(4,7,3,.92);font-family:"Noto Sans JP",sans-serif;color:#cfe;padding:16px';
-    box.innerHTML='<form style="width:min(380px,100%);background:#0b120a;border:1px solid rgba(141,255,166,.35);border-radius:12px;padding:20px;display:grid;gap:12px">'+
-      '<div style="font:700 18px/1.3 \'Chakra Petch\',sans-serif;color:#8dffa6;letter-spacing:.06em">PILOT LOGIN</div>'+
-      '<div style="font-size:12.5px;color:#9bbf9f;line-height:1.6">オンライン対戦用のパイロット名を登録します。名前とGitHubユーザー名（アイコン表示用・任意）はこの端末と対戦相手にだけ共有されます。</div>'+
-      '<label style="font-size:12px;color:#7aa583">パイロット名<input id="lg-n" maxlength="16" required autocomplete="nickname" style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px;border-radius:8px;border:1px solid #2c4a30;background:#050a04;color:#eaffee;font-size:16px"></label>'+
-      '<label style="font-size:12px;color:#7aa583">GitHubユーザー名（任意）<input id="lg-g" maxlength="39" autocomplete="off" autocapitalize="off" placeholder="octocat" style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px;border-radius:8px;border:1px solid #2c4a30;background:#050a04;color:#eaffee;font-size:16px"></label>'+
-      '<button type="submit" style="padding:12px;border:0;border-radius:8px;background:#8dffa6;color:#06210c;font:700 15px \'Noto Sans JP\',sans-serif">出撃登録</button></form>';
-    document.body.appendChild(box);
-    const f=box.querySelector('form'); setTimeout(function(){ try{ box.querySelector('#lg-n').focus(); }catch(e){} },50);
-    f.addEventListener('submit',function(e){ e.preventDefault(); const n=box.querySelector('#lg-n').value.trim().slice(0,16); if(!n) return; let g=box.querySelector('#lg-g').value.trim().replace(/^@/,''); if(!/^[A-Za-z0-9-]{1,39}$/.test(g)) g='';
-      ME={id:'u_'+rid(22),name:n,gh:g}; LS.set('uh60_login',ME); window.__standalone=ME; box.remove(); res(ME); });
-  });
+  loginP=(async function(){ if(SES){ await resumeKey(); window.__standalone=ME; return ME; } const a=await loginUi(); window.__standalone=a; setTimeout(function(){ location.reload(); },60); return new Promise(function(){}); })();
   return loginP;
 }
+if(!SES){ const go=function(){ login(); }; if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go(); }
 
-/* ---------- player database (local cache + gossip) ---------- */
+/* ---------- player database (local cache + signed gossip) ---------- */
 const PL=(function(){ const o=LS.get('uh60_players'); return (o&&typeof o==='object')?o:{}; })();
 const plSubs=[]; let plT=0;
 function plSave(){ clearTimeout(plT); plT=setTimeout(function(){ LS.set('uh60_players',PL); },400); }
 function plNotify(){ plSubs.forEach(function(f){ try{ f(snapshot()); }catch(e){} }); }
 function snapshot(){ return {docs:Object.keys(PL).map(function(id){ return {id:id,exists:true,data:function(){ return PL[id]; }}; })}; }
-const NUM=['pts','tot','rating','w','l','k','dth','ms'];
+const NUM=['pts','tot','rating','w','l','k','dth','ms','reg'];
 function clean(d){
-  const o={v:1}; if(!d||typeof d!=='object') return null;
+  if(!d||typeof d!=='object') return null; const o={v:1};
   NUM.forEach(function(k){ if(typeof d[k]==='number'&&isFinite(d[k])) o[k]=d[k]; });
   ['unlocked','friends','ign'].forEach(function(k){ o[k]=Array.isArray(d[k])?d[k].filter(function(x){ return typeof x==='string'&&x.length<=40; }).slice(0,200):[]; });
   o.veh=typeof d.veh==='string'?d.veh.slice(0,20):'uh60ja'; o.hist=Array.isArray(d.hist)?d.hist.slice(-12):[];
   o.nm=typeof d.nm==='string'?d.nm.slice(0,16):''; o.gh=(typeof d.gh==='string'&&/^[A-Za-z0-9-]{1,39}$/.test(d.gh))?d.gh:'';
+  o.pn=typeof d.pn==='string'&&/^[a-z0-9_]{3,16}$/.test(d.pn)?d.pn:''; o.pub=typeof d.pub==='string'?d.pub.slice(0,120):'';
+  const w=d.wk; o.wk=(w&&typeof w.s==='string'&&typeof w.i==='string'&&typeof w.c==='string'&&w.c.length<600)?{s:w.s,i:w.i,c:w.c}:null; o.sg=typeof d.sg==='string'?d.sg.slice(0,140):'';
   return o;
 }
-function accept(id,d){ if(!id||typeof id!=='string'||id.length>40) return; const c=clean(d); if(!c) return; const old=PL[id]; if(old&&(old.ms||0)>(c.ms||0)) return; PL[id]=c; plSave(); plNotify(); }
+/* first-seen public key per account wins; every update must be signed by that key */
+async function accept(id,d){
+  if(!CR||!id||typeof id!=='string'||id.length>40) return false; const c=clean(d); if(!c||!c.sg||!c.pub||!c.pn||!c.wk) return false;
+  try{ if(id!==await idOf(c.pn)) return false; }catch(e){ return false; }
+  const old=PL[id]; if(old&&old.pub&&old.pub!==c.pub) return false; if(old&&(old.ms||0)>=(c.ms||0)) return false;
+  if(!(await verifyBody(c))) return false;
+  PL[id]=c; plSave(); try{ localStorage.setItem('uh60_acct_'+id,JSON.stringify({nm:c.nm,gh:c.gh,pub:c.pub,wk:c.wk,reg:c.reg})); }catch(e){} plNotify(); return true;
+}
 const dbShim={
   collection(name){ if(name!=='players') throw new Error('unsupported'); return { onSnapshot(cb){ plSubs.push(cb); setTimeout(function(){ cb(snapshot()); },0); return function(){ const i=plSubs.indexOf(cb); if(i>=0) plSubs.splice(i,1); }; } }; },
   doc(path){ const id=String(path).split('/')[1];
     return {
       async get(){ const d=PL[id]; return {exists:!!d,id:id,data:function(){ return d; }}; },
-      async set(body){ if(!ME||id!==ME.id) throw Object.assign(new Error('forbidden'),{code:'invalid_argument'}); const b=Object.assign({},body,{nm:ME.name,gh:ME.gh||''}); const c=clean(b); c.ms=Date.now(); PL[id]=c; plSave(); plNotify(); gossipNow(); }
+      async set(body){
+        if(!ME||id!==ME.id||!PRIV) throw Object.assign(new Error('forbidden'),{code:'invalid_argument'});
+        const c=clean(Object.assign({},body,{nm:ME.name,gh:ME.gh||'',pn:ME.pn,pub:ME.pub,wk:ME.wk,reg:ME.reg})); c.ms=Date.now(); c.sg=await signBody(PRIV,c);
+        PL[id]=c; plSave(); plNotify(); gossipNow();
+      }
     }; }
 };
 
@@ -442,9 +516,9 @@ const userShim={
   async id(){ return (await login()).id; },
   async can(){ return true; }, isOwner(){ return false; }, canEdit(){ return false; },
   async profiles(ids){ const o={}; ids.forEach(function(i){ const p=PL[i]; o[i]=p&&p.nm?{name:p.nm,avatarUrl:ghUrl(p.gh)}:(ME&&i===ME.id?{name:ME.name,avatarUrl:ghUrl(ME.gh)}:{name:''}); }); return o; },
-  async search(q){ q=String(q||'').trim().toLowerCase(); const out=[];
-    Object.keys(PL).forEach(function(id){ const p=PL[id]; if(ME&&id===ME.id) return; if(!q||id.toLowerCase()===q||(p.nm&&p.nm.toLowerCase().indexOf(q)>=0)) out.push({id:id,name:p.nm||'プレイヤー',avatarUrl:ghUrl(p.gh)}); });
-    if(/^u_[a-z0-9]{22}$/.test(q)&&!PL[q]&&(!ME||q!==ME.id)) out.unshift({id:q,name:'ID '+q.slice(2,8),avatarUrl:''});
+  async search(q){ q=String(q||'').trim().toLowerCase().replace(/^@/,''); const out=[];
+    Object.keys(PL).forEach(function(id){ const p=PL[id]; if(ME&&id===ME.id) return; if(!q||p.pn===q||(p.nm&&p.nm.toLowerCase().indexOf(q)>=0)||(p.pn&&p.pn.indexOf(q)>=0)) out.push({id:id,name:(p.nm||'プレイヤー')+(p.pn?'  @'+p.pn:''),avatarUrl:ghUrl(p.gh)}); });
+    if(/^[a-z0-9_]{3,16}$/.test(q)&&CR&&(!ME||q!==ME.pn)){ const id=await idOf(q); if(!PL[id]) out.unshift({id:id,name:'@'+q+'（未確認）',avatarUrl:''}); }
     return out.slice(0,12); }
 };
 
@@ -526,23 +600,33 @@ function makeRoom(name,isLobby){
   R.leave=function(){ dead=true; clearTimeout(rt); teardown(); };
   R.join=async function(n){ n=String(n).toLowerCase().replace(/[^a-z0-9_.-]/g,'').slice(0,40); const r=makeRoom(n,false); await r._ready(); return r; };
   R._ready=function(){ return new Promise(function(res){ let t=0; const iv=setInterval(function(){ if(open||++t>40){ clearInterval(iv); res(); } },150); }); };
-  R._gossip=function(){ if(open&&isLobby) R.emit('_prof',PL[ME.id]||null); };
+  R._gossip=function(){ if(!open||!isLobby) return; if(PL[ME.id]) R.emit('_prof',{id:ME.id,d:PL[ME.id]}); const ks=Object.keys(PL).filter(function(k){ return k!==ME.id; }); for(let i=0;i<Math.min(3,ks.length);i++){ const k=ks[Math.floor(Math.random()*ks.length)]; R.emit('_prof',{id:k,d:PL[k]}); } };
   start();
   return R;
 }
 
+function lobbyName(){ let ln=''; try{ ln=(new URLSearchParams(location.search).get('lobby')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,24); }catch(e){} return 'lobby-'+(ln||'public'); }
+/* ask the lobby whether an account exists (returns the verified public record or null) */
+async function probe(id){
+  let R=null, found=null; try{ R=makeRoom(lobbyName(),false); await R._ready(); if(!R.connected()){ R.leave(); return null; }
+    const pend=[]; R.on('_prof',function(m){ if(m.data&&m.data.id===id&&m.data.d&&!found) pend.push(m.data.d); });
+    const ask=function(){ R.emit('_want',{id:id}); R.emit('_want',{id:id}); }; ask();
+    for(let i=0;i<20&&!found;i++){ await new Promise(function(r){ setTimeout(r,500); }); while(pend.length&&!found){ const c=clean(pend.shift()); if(c&&c.sg&&c.pub&&c.pn&&c.wk&&(await idOf(c.pn))===id&&(await verifyBody(c))) found=c; } if(i===8&&!found) ask(); }
+  }catch(e){} try{ R&&R.leave(); }catch(e){} return found;
+}
 let lobby=null;
 function gossipNow(){ if(lobby) lobby._gossip(); }
 async function lobbyRoom(){
   await login(); if(lobby) return lobby;
-  let ln=''; try{ ln=(new URLSearchParams(location.search).get('lobby')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,24); }catch(e){} if(!ln) ln='public';
-  lobby=makeRoom('lobby-'+ln,true);
-  lobby.on('_prof',function(m){ if(!m.isMe&&m.by&&m.data) accept(m.by,m.data); });
+  lobby=makeRoom(lobbyName(),true);
+  lobby.on('_prof',function(m){ if(!m.isMe&&m.data&&m.data.id) accept(m.data.id,m.data.d); });
+  lobby.on('_want',function(m){ if(m.isMe||!m.data) return; const id=m.data.id; if(PL[id]) lobby.emit('_prof',{id:id,d:PL[id]}); });
   lobby.onPeers(function(ch){ if(ch.joined.some(function(p){ return !p.isMe; })) setTimeout(gossipNow,300); });
   setInterval(gossipNow,15000);
   return lobby;
 }
 
+window.__logout=logout;
 window.claude={ async use(name){
   if(name==='user') return userShim;
   if(name==='db'){ await login(); return dbShim; }
@@ -616,8 +700,8 @@ const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints>0) || (
 function failMsg(t){ const s=$('intro').querySelector('.sheet'); s.insertAdjacentHTML('afterbegin','<p style="color:#ff5a4a;font-weight:700">'+t+'</p>'); const b=$('start-simulation'); if(b) b.disabled=true; }
 if(!window.THREE){ failMsg('three.js を読み込めませんでした。接続を確認して再読み込みしてください。'); return; }
 const SETTINGS = {quality:'auto',sens:100,vol:80,hud:1,swap:0,voice:0,pod:'none',best:{}};
-try{ const o=JSON.parse(localStorage.getItem('uh60ja.v2')||'{}'); for(const k in o) SETTINGS[k]=o[k]; }catch(e){}
-function saveStore(){ try{ localStorage.setItem('uh60ja.v2',JSON.stringify(SETTINGS)); }catch(e){} }
+try{ const o=JSON.parse(localStorage.getItem((window.__LSPFX||'')+'uh60ja.v2')||'{}'); for(const k in o) SETTINGS[k]=o[k]; }catch(e){}
+function saveStore(){ try{ localStorage.setItem((window.__LSPFX||'')+'uh60ja.v2',JSON.stringify(SETTINGS)); }catch(e){} }
 const Prof={
   d:Object.assign({pts:200,tot:200,rating:1000,w:0,l:0,k:0,dth:0,unlocked:['uh60ja'],veh:'uh60ja',friends:[],ign:[],hist:[],ms:0},SETTINGS.prof||{}),
   listeners:[],
@@ -3357,7 +3441,7 @@ const Net={
     if(!this.uid){ this.state='offline'; this.note='アカウント情報を取得できませんでした。claude.aiにサインインした状態で共有リンクから開いてください。'; this.ui('state'); return; }
     this.names[this.uid]=this.me.name||'あなた'; this.avatars[this.uid]=this.me.avatarUrl;
     try{ const w=await this.user.can('data.write'); this.canWrite=(w!==false); }catch(e){}
-    this.state='online'; this.note=window.__standalone?('フレンドID：'+this.uid+'（相手に伝えると、フレンド検索にこのIDを入力して追加できます）'):this.canWrite?'':'閲覧権限のため、ポイント・フレンドは保存されません（編集者・共同作業者として共有してもらってください）。';
+    this.state='online'; this.note=window.__standalone?('プレイヤー名 @'+window.__standalone.pn+'（相手にこの名前を伝えると、フレンド検索に入力して追加できます）'):this.canWrite?'':'閲覧権限のため、ポイント・フレンドは保存されません（編集者・共同作業者として共有してもらってください）。';
     if(this.db) this.startDb(); if(this.room) this.startLobby();
     this.ui('state');
   },
@@ -3770,7 +3854,7 @@ const OnlineUI={
     const d=Prof.d, id=Net.uid, on=Net.state==='online';
     $('ol-me').innerHTML=(id?avatarOf(id):'<img alt="" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 fill=%27%23333%27/%3E%3C/svg%3E">')+
       '<div><div class="nm">'+esc(id?Net.nm(id):'ゲスト（オフライン）')+'</div><div class="st"><span>'+(on?'<b style="color:#6fe07a">● ONLINE</b>':Net.state==='connecting'?'接続中…':'○ OFFLINE')+'</span><span>レート '+d.rating+'</span><span>'+d.pts+' pt</span><span>'+d.w+'勝 '+d.l+'敗</span><span>機体 '+esc(VEH[d.veh].name)+'</span></div></div>';
-    $('ol-note').textContent=Net.note||'';
+    $('ol-note').textContent=Net.note||''; if(window.__logout&&!$('ol-out')){ const b=document.createElement('button'); b.id='ol-out'; b.className='obtn sec sm'; b.textContent='ログアウト'; b.onclick=function(){ if(confirm('ログアウトしますか？（データはこの端末とアカウントに保存されています）')) window.__logout(); }; $('ol-note').parentNode.insertBefore(b,$('ol-note').nextSibling); }
   },
   build(){
     const me=this; this.meCard();
