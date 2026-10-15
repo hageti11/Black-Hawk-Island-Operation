@@ -32,8 +32,8 @@ button:focus-visible,input:focus-visible+label{outline:2px solid var(--amber);ou
 [hidden]{display:none!important}
 
 /* ---------- touch zones & floating sticks ---------- */
-.zone{position:absolute;top:0;bottom:0;width:36%;z-index:1;touch-action:none}
-#zoneL{left:0}#zoneR{right:0}#zoneC{left:36%;width:28%}
+.zone{position:absolute;top:0;bottom:0;width:28%;z-index:1;touch-action:none}
+#zoneL{left:0}#zoneR{right:0}#zoneC{left:28%;width:44%}
 body.swap #zoneL{left:auto;right:0}body.swap #zoneR{right:auto;left:0}
 .stk,.ghost{position:absolute;left:0;top:0;width:calc(var(--s)*9);height:calc(var(--s)*9);margin:calc(var(--s)*-4.5) 0 0 calc(var(--s)*-4.5);border-radius:50%;pointer-events:none;z-index:2}
 .stk{border:2px solid rgba(214,207,166,.55);background:radial-gradient(circle,rgba(214,207,166,.05),rgba(214,207,166,.16));opacity:0;transition:opacity .12s}
@@ -163,6 +163,54 @@ body:not(.touch) #actions{opacity:.9}
 .seg button.on{background:rgba(110,150,60,.3);border-color:var(--drab-hi)}
 .set input[type=range]{width:100%;accent-color:#7a9c3f}
 #bigmap{width:min(92vmin,calc(100% - 20px));height:auto;aspect-ratio:1;display:block;margin:2vh auto 0;border:1px solid var(--line);background:#000}
+/* ---------- online ---------- */
+#online{background:radial-gradient(ellipse at 80% 0%,rgba(18,34,46,.94) 0%,rgba(8,11,8,.9) 62%);z-index:22}
+.olhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.olme{display:flex;gap:12px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid var(--line);background:rgba(10,14,8,.6)}
+.olme img,.pl img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#222;flex:none}
+.olme .nm{font:700 16px var(--f-display);color:var(--khaki)}
+.olme .st{font:12px var(--f-data);color:var(--phos);display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:2px}
+.oltabs{display:flex;gap:4px;margin:12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.oltabs button{flex:1 0 auto;padding:11px 14px;background:transparent;border:1px solid rgba(214,207,166,.3);color:var(--khaki);font:700 13px var(--f-display);letter-spacing:.08em;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.oltabs button.on{background:rgba(110,150,60,.3);border-color:var(--drab-hi)}
+.olb{display:grid;gap:8px}
+.olrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.obtn{padding:10px 16px;background:var(--drab);border:1px solid var(--drab-hi);color:#fff;font:700 13px var(--f-display);letter-spacing:.08em;cursor:pointer;touch-action:manipulation}
+.obtn.sec{background:transparent;border-color:rgba(214,207,166,.4);color:var(--khaki)}
+.obtn.warn{background:#6a2a1e;border-color:#c05a3a}
+.obtn:disabled{opacity:.45}
+.obtn.sm{padding:6px 10px;font-size:12px}
+.otxt{flex:1;min-width:120px;padding:10px 12px;background:rgba(0,0,0,.35);border:1px solid rgba(214,207,166,.35);color:var(--khaki);font:500 14px var(--f-body);-webkit-user-select:text;user-select:text}
+.pl{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid rgba(214,207,166,.16);background:rgba(214,207,166,.04)}
+.pl .nm{font:700 14px var(--f-display);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl small{display:block;font:11px var(--f-data);color:var(--dim)}
+.pl .dot{width:9px;height:9px;border-radius:50%;background:#555;flex:none}.pl .dot.on{background:#6fe07a;box-shadow:0 0 6px #6fe07a}.pl .dot.busy{background:#e8b23a}
+.pl.me{border-color:var(--drab-hi);background:rgba(110,150,60,.16)}
+.pl .rk{font:700 15px var(--f-display);width:2em;color:var(--amber);text-align:center}
+.olh{margin:12px 0 4px;font:700 12px var(--f-display);letter-spacing:.2em;color:var(--amber)}
+.vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px}
+.vc{padding:12px;border:1px solid rgba(214,207,166,.2);background:rgba(214,207,166,.04);display:grid;gap:6px}
+.vc.eq{border-color:var(--drab-hi);background:rgba(110,150,60,.18)}
+.vc b{font:700 16px var(--f-display);color:var(--khaki)}.vc small{color:var(--dim);font:500 11.5px/1.6 var(--f-body)}
+.vc .bars{display:grid;grid-template-columns:3.6em 1fr;gap:3px 8px;font:11px var(--f-data);color:var(--dim);align-items:center}
+.vc .bars i{display:block;height:6px;background:rgba(255,255,255,.1)}.vc .bars i u{display:block;height:100%;background:var(--phos);text-decoration:none}
+.vc .price{font:700 14px var(--f-data);color:var(--amber)}
+.chatlog{height:min(40vh,300px);overflow-y:auto;padding:8px 10px;border:1px solid rgba(214,207,166,.16);background:rgba(0,0,0,.3);font:500 13px/1.6 var(--f-body);-webkit-user-select:text;user-select:text}
+.chatlog b{color:var(--phos);margin-right:6px;font-weight:700}
+.chatlog .me b{color:var(--amber)}
+#invbar{position:absolute;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;width:min(520px,calc(100% - 20px));padding:10px 12px;background:rgba(16,22,12,.96);border:1px solid var(--amber);display:flex;gap:10px;align-items:center;font:700 13px var(--f-display)}
+#invbar span{flex:1}
+#chatp{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:12;width:min(480px,calc(100% - 20px));padding:10px;background:rgba(10,14,8,.92);border:1px solid var(--line);display:grid;gap:8px}
+#chatp .chatlog{height:96px}
+#chatq{display:flex;flex-wrap:wrap;gap:6px}
+#chatq button{padding:7px 10px;background:transparent;border:1px solid rgba(214,207,166,.35);color:var(--khaki);font:700 12px var(--f-display);cursor:pointer;touch-action:manipulation}
+#hitm{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;z-index:4;opacity:0;transition:opacity .12s;background:linear-gradient(45deg,transparent 46%,#ff5a4a 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#ff5a4a 46% 54%,transparent 54%)}
+#hitm.on{opacity:1;transition:none}
+#duelhud{position:absolute;left:50%;top:calc(var(--s)*9.5);transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;padding:4px 12px;background:var(--panel);border:1px solid var(--line);font:700 calc(var(--s)*1) var(--f-display);pointer-events:none;white-space:nowrap}
+#duelhud i{display:block;width:calc(var(--s)*6);height:6px;background:rgba(255,255,255,.14)}#duelhud i u{display:block;height:100%;background:#7fd05a;text-decoration:none}
+#duelhud em{font-style:normal;color:var(--amber);font-size:1.25em}
+.pill{display:inline-flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px;padding:6px 12px;border:1px solid var(--line);background:rgba(10,14,8,.6);font:12px var(--f-data);color:var(--phos)}
+.pill b{color:var(--amber);font-weight:400}
 @media (max-width:760px){
   #top{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'l r' 'c c'}
   #leftcol{grid-area:l}#rightcol{grid-area:r}#center{grid-area:c;width:100%;max-width:420px;justify-self:center}
@@ -222,7 +270,7 @@ body:not(.touch) #actions{opacity:.9}
         <button id="b-nvg" title="暗視 (N)">暗視</button>
         <button id="b-map" title="地図 (T)">地図</button>
         <button id="b-snd" class="on" title="音 (M)">音</button>
-        <button id="b-pause" title="一時停止 (P)">停止</button>
+        <button id="b-chat" title="通信" hidden>通信</button><button id="b-pause" title="一時停止 (P)">停止</button>
         <button id="b-set" title="設定">設定</button>
         <button id="b-full" title="全画面" hidden>全画面</button>
       </nav>
@@ -245,6 +293,20 @@ body:not(.touch) #actions{opacity:.9}
       <table id="r-table"></table>
       <div class="btns"><button id="r-retry">もう一度</button><button id="r-free" class="sec">飛行を続ける</button><button id="r-brief" class="sec">ブリーフィング</button></div></div>
   </div>
+  <div id="online" class="overlay" hidden>
+    <div class="sheet">
+      <div class="olhead"><h1 style="font-size:clamp(24px,5vw,40px)">ONLINE <em>HQ</em></h1><button class="obtn sec" id="ol-close">閉じる</button></div>
+      <div class="olme" id="ol-me"></div>
+      <p class="hint" id="ol-note"></p>
+      <nav class="oltabs" id="ol-tabs"><button data-t="duel">タイマン</button><button data-t="friends">フレンド</button><button data-t="rank">ランキング</button><button data-t="garage">ガレージ</button><button data-t="chat">チャット</button></nav>
+      <div class="olb" id="ol-body"></div>
+      <div style="height:calc(24px + env(safe-area-inset-bottom,0px))"></div>
+    </div>
+  </div>
+  <div id="invbar" hidden><span id="inv-t"></span><button class="obtn sm" id="inv-ok">受ける</button><button class="obtn sm sec" id="inv-no">断る</button></div>
+  <div id="chatp" hidden><div class="chatlog" id="cp-log"></div><div id="chatq"></div><div class="olrow"><input class="otxt" id="cp-in" maxlength="120" placeholder="メッセージ"><button class="obtn sm" id="cp-send">送信</button><button class="obtn sm sec" id="cp-x">閉じる</button></div></div>
+  <div id="hitm"></div>
+  <div id="duelhud" hidden><span id="dh-me"></span><em id="dh-sc">0-0</em><span id="dh-op"></span><i><u id="dh-hp" style="width:100%"></u></i></div>
   <div id="settings" class="overlay" hidden>
     <div class="card"><h3>設定</h3>
       <div class="set">
@@ -253,6 +315,7 @@ body:not(.touch) #actions{opacity:.9}
         <label class="row">音量<input type="range" id="s-vol" min="0" max="100" step="5"></label>
         <label class="row">HUD大きさ<div class="seg" id="s-hud"><button data-v="0.85">小</button><button data-v="1">中</button><button data-v="1.2">大</button><button data-v="1.4">特大</button></div></label>
         <label class="row">左右入れ替え<div class="seg" id="s-swap"><button data-v="0">通常</button><button data-v="1">左利き</button></div></label>
+        <label class="row">追加ポッド<small style="opacity:.6">（フリーフライト）</small><div class="seg" id="s-pod"><button data-v="none">なし</button><button data-v="rocket">ロケット</button><button data-v="hook">フック</button><button data-v="rope">救助ロープ</button><button data-v="bucket">バケツ</button></div></label>
         <label class="row">無線読み上げ<div class="seg" id="s-voice"><button data-v="0">なし</button><button data-v="1">あり</button></div></label>
       </div>
       <div class="btns"><button id="s-close">閉じる</button></div></div>
@@ -264,6 +327,7 @@ body:not(.touch) #actions{opacity:.9}
       <h1>UH-60<em>JA</em></h1>
       <p class="sub">ULTIMATE REALISTIC SIMULATOR</p>
       <p class="org">陸上自衛隊 多用途ヘリコプター / 災害派遣・空中機動・救難</p>
+      <div class="pill" id="i-pill"></div>
       <div class="cols">
         <div>
           <div class="opts" id="opt-mission"></div>
@@ -300,7 +364,7 @@ body:not(.touch) #actions{opacity:.9}
       </div>
       <div class="startbar">
         <button class="start" id="start-simulation">フライト開始</button>
-        <button class="btn2" id="i-set">設定</button>
+        <button class="btn2" id="i-online">ONLINE</button><button class="btn2" id="i-garage">ガレージ</button><button class="btn2" id="i-set">設定</button>
       </div>
     </div>
   </div>
@@ -374,9 +438,20 @@ const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints>0) || (window.matchMedia && matchMedia('(pointer:coarse)').matches);
 function failMsg(t){ const s=$('intro').querySelector('.sheet'); s.insertAdjacentHTML('afterbegin','<p style="color:#ff5a4a;font-weight:700">'+t+'</p>'); const b=$('start-simulation'); if(b) b.disabled=true; }
 if(!window.THREE){ failMsg('three.js を読み込めませんでした。接続を確認して再読み込みしてください。'); return; }
-const SETTINGS = {quality:'auto',sens:100,vol:80,hud:1,swap:0,voice:0,best:{}};
+const SETTINGS = {quality:'auto',sens:100,vol:80,hud:1,swap:0,voice:0,pod:'none',best:{}};
 try{ const o=JSON.parse(localStorage.getItem('uh60ja.v2')||'{}'); for(const k in o) SETTINGS[k]=o[k]; }catch(e){}
 function saveStore(){ try{ localStorage.setItem('uh60ja.v2',JSON.stringify(SETTINGS)); }catch(e){} }
+const Prof={
+  d:Object.assign({pts:200,tot:200,rating:1000,w:0,l:0,k:0,dth:0,unlocked:['uh60ja'],veh:'uh60ja',friends:[],ign:[],hist:[],ms:0},SETTINGS.prof||{}),
+  listeners:[],
+  on(fn){ this.listeners.push(fn); },
+  fire(){ this.listeners.forEach(function(f){ try{ f(); }catch(e){} }); },
+  save(){ SETTINGS.prof=this.d; saveStore(); this.fire(); },
+  award(n){ n=Math.max(0,Math.round(n)); this.d.pts+=n; this.d.tot+=n; this.save(); return n; },
+  owns(id){ return this.d.unlocked.indexOf(id)>=0; },
+  buy(id){ const v=VEH[id]; if(!v||this.owns(id)||this.d.pts<v.price) return false; this.d.pts-=v.price; this.d.unlocked.push(id); this.d.veh=id; this.save(); return true; },
+  equip(id){ if(!this.owns(id)) return false; this.d.veh=id; this.save(); return true; }
+};
 document.body.classList.toggle('touch',IS_TOUCH);
 document.body.classList.add('fresh');
 /* ===================== renderer / scene ===================== */
@@ -851,7 +926,8 @@ const HM={
   body:new THREE.MeshStandardMaterial({vertexColors:true,roughness:.5,metalness:.12}),
   dark:stdMat(0x15171a,.6,.3), metal:stdMat(0x6a6d70,.35,.8), tire:stdMat(0x101010,.95,0),
   olive:stdMat(0x3c4627,.5,.12), olive2:stdMat(0x333c20,.5,.1), yellow:stdMat(0xe8c02a,.5,0), red:stdMat(0xc4161c,.6,0),
-  glass:new THREE.MeshStandardMaterial({color:0x0b1722,roughness:.06,metalness:.7,transparent:true,opacity:.7})
+  glass:new THREE.MeshStandardMaterial({color:0x0b1722,roughness:.06,metalness:.7,transparent:true,opacity:.7}),
+  steel:stdMat(0xa9acae,.3,.85), rubber:stdMat(0x1c1c1c,.9,0), skin:stdMat(0xd2a982,.8), helmW:stdMat(0xcfd2c6,.45,.1), visor:stdMat(0x1a1f24,.15,.6), suit:stdMat(0x4a5238,.9), seat:stdMat(0x2a2f24,.9)
 };
 const FUSE=[
   {z:4.70,hw:.10,yt:2.05,yb:1.85,n:2.0},{z:4.45,hw:.50,yt:2.45,yb:1.70,n:2.2},{z:4.00,hw:.88,yt:2.80,yb:1.35,n:2.5},
@@ -860,20 +936,26 @@ const FUSE=[
   {z:-2.00,hw:1.14,yt:3.14,yb:1.05,n:4.0},{z:-2.90,hw:.90,yt:3.12,yb:1.55,n:3.2},{z:-3.80,hw:.62,yt:3.10,yb:2.15,n:2.6},
   {z:-5.20,hw:.50,yt:3.14,yb:2.40,n:2.4},{z:-7.00,hw:.38,yt:3.22,yb:2.58,n:2.3},{z:-8.60,hw:.26,yt:3.40,yb:2.86,n:2.2},{z:-9.15,hw:.20,yt:3.50,yb:3.00,n:2.0}
 ];
-function fuseColor(x,y,z){
+function fuseColor(x,y,z,style){
   if(z>2.55&&z<4.2&&y>2.05&&y<3.08) return [.035,.06,.09];           // windscreen and cockpit side glass
+  if(style==='rescue'){
+    if(y<1.35&&z>-3) return [.3,.31,.32];
+    if(y>1.45&&y<1.78&&z>-8) return [.9,.36,.04];                    // orange band
+    const n2=.01*Math.sin(x*9+z*3.1); return [.86+n2,.88+n2,.86+n2];
+  }
   if(y<1.5&&z>-3) return [.14,.17,.095];                              // dark belly
   const n=.012*Math.sin(x*9+z*3.1)+.01*Math.sin(z*5.3);                // faint panel variation
   return [.215+n,.265+n,.14+n];
 }
-function loftGeo(st,seg){
+function loftGeo(st,seg,colFn){
+  colFn=colFn||fuseColor;
   const pos=[],col=[],idx=[],ns=st.length;
   for(let i=0;i<ns;i++){
     const s=st[i], yc=(s.yt+s.yb)/2, hh=(s.yt-s.yb)/2, ex=2/s.n;
     for(let j=0;j<seg;j++){
       const a=j/seg*Math.PI*2, c=Math.cos(a), sn=Math.sin(a);
       const x=s.hw*Math.sign(c)*Math.pow(Math.abs(c),ex), y=yc+hh*Math.sign(sn)*Math.pow(Math.abs(sn),ex);
-      pos.push(x,y,s.z); const cc=fuseColor(x,y,s.z); col.push(cc[0],cc[1],cc[2]);
+      pos.push(x,y,s.z); const cc=colFn(x,y,s.z,s); col.push(cc[0],cc[1],cc[2]);
     }
   }
   for(let i=0;i<ns-1;i++) for(let j=0;j<seg;j++){ const a=i*seg+j, b=i*seg+(j+1)%seg, c2=(i+1)*seg+j, d=(i+1)*seg+(j+1)%seg; idx.push(a,c2,b,b,c2,d); }
@@ -884,17 +966,21 @@ function loftGeo(st,seg){
   g.setIndex(idx); g.computeVertexNormals(); return g;
 }
 const FUSE_GEO=loftGeo(FUSE,18);
+const FUSE_GEO_R=loftGeo(FUSE,18,function(x,y,z,s){ return fuseColor(x,y,z,'rescue'); });
+const HMR=Object.assign({},HM,{olive:stdMat(0xdcdedb,.45,.1),olive2:stdMat(0xc8cac6,.45,.1),orange:stdMat(0xe85d0c,.5,0)});
+HM.orange=HMR.orange;
 const HOIST_ANCHOR=new THREE.Vector3(-2.2,3.0,-.45), SLING_ANCHOR=new THREE.Vector3(0,.95,-.2);
 const tipGeo=new THREE.BoxGeometry(.6,.05,.535), bladeGeo=new THREE.BoxGeometry(7.7,.045,.53);
 const sprGlow=function(c,sz){ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:puffTex,color:c,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})); s.scale.set(sz,sz,1); return s; };
 
-function buildHeliModel(parked){
+function buildUH60(parked,style){
+  const resc=style==='rescue', M=resc?HMR:HM;
   const g=new THREE.Group(); g.rotation.order='YXZ';
   const B=new Batch(), P={g:g};
   const cy=function(r0,r1,len,seg){ return new THREE.CylinderGeometry(r0,r1,len,seg||10); };
   const bx=function(w,h,d){ return bgeo(w,h,d); };
   const HP=Math.PI/2;
-  B.add(FUSE_GEO,'body');
+  B.add(resc?FUSE_GEO_R:FUSE_GEO,'body');
   // transmission deck, engines, exhaust, mast
   B.add(bx(1.4,.5,2.0),'olive',[0,3.42,.15]);
   [1,-1].forEach(function(s){
@@ -906,11 +992,13 @@ function buildHeliModel(parked){
     B.add(cy(.27,.27,.22,16),'tire',[s*1.56,.27,-.3],[0,0,HP]);
     B.add(cy(.12,.12,.26,10),'metal',[s*1.56,.27,-.3],[0,0,HP]);
     B.add(bx(.05,.5,.07),'metal',[s*1.2,.7,.35],[0,0,s*.35]);
-    // external stores support: stub wing, pylons, tank
+    // external stores support: stub wing, pylons, tank (not on the rescue type)
+    if(!resc){
     B.add(bx(1.4,.09,1.0),'olive',[s*1.85,2.35,.1]);
     B.add(bx(.07,.18,.4),'metal',[s*2.35,2.24,.1]);
     B.add(cy(.3,.3,2.6,12),'olive2',[s*2.35,1.82,.1],[HP,0,0]);
     B.add(new THREE.SphereGeometry(.3,12,8),'olive2',[s*2.35,1.82,1.4]); B.add(new THREE.SphereGeometry(.3,12,8),'olive2',[s*2.35,1.82,-1.2]);
+    }
     // pitot, cockpit pillars, seats
     B.add(cy(.02,.02,.7,5),'metal',[s*.72,2.32,4.2],[HP,0,0]);
     B.add(bx(.06,.9,.08),'dark',[s*.58,2.65,3.7],[.8,0,0]);
@@ -934,7 +1022,47 @@ function buildHeliModel(parked){
   // door recess panels
   const rec=new THREE.PlaneGeometry(1.7,1.3);
   B.add(rec,'dark',[1.206,1.95,-.5],[0,HP,0]); B.add(rec,'dark',[-1.206,1.95,-.5],[0,-HP,0]);
-  B.build(HM,g,true,true);
+  // ---- v3 detail pass ----
+  // wire-strike cutters, wipers, windscreen centre post, refuel port, panel seams
+  B.add(bx(.05,.32,.08),'steel',[0,3.3,3.28],[-.15,0,0]); B.add(bx(.05,.3,.08),'steel',[0,1.0,3.95],[.5,0,0]);
+  B.add(bx(.05,.6,.05),'dark',[0,2.62,4.14],[.62,0,0]);
+  [-.35,.35].forEach(function(x){ B.add(bx(.02,.02,.5),'dark',[x,2.55,4.25],[.6,0,x>0?.6:-.6]); });
+  [1,-1].forEach(function(s){
+    B.add(bx(.012,.03,5.6),'dark',[s*1.197,2.62,-.3]); B.add(bx(.012,.03,4.8),'dark',[s*1.185,1.18,-.5]);
+    B.add(bx(.012,.55,.03),'dark',[s*1.2,2.1,-2.1]); B.add(bx(.012,.55,.03),'dark',[s*1.2,2.1,1.2]);
+    // door rails, handle, step
+    B.add(bx(.06,.05,2.2),'metal',[s*1.222,2.62,-.5]); B.add(bx(.06,.05,2.2),'metal',[s*1.222,1.32,-.5]);
+    B.add(bx(.04,.14,.05),'steel',[s*1.27,1.95,.15]); B.add(bx(.3,.04,.22),'metal',[s*1.32,1.0,-.5]);
+    // fast-rope davit
+    B.add(bx(.06,.06,.9),'metal',[s*1.55,2.2,-.5],[0,0,s*.55]); B.add(bx(.14,.14,.14),'steel',[s*1.95,1.8,-.5]);
+    // engine cowl ribs, intake grille, oil cooler
+    for(let i=0;i<5;i++) B.add(bx(.46,.02,.08),'dark',[s*.62,3.9-Math.abs(i-2)*.03,-.35-i*.34],[0,0,0]);
+    B.add(bx(.46,.34,.04),'steel',[s*.62,3.62,.15]);
+    B.add(cy(.13,.13,.5,10),'dark',[s*.62,3.74,-2.85],[HP-.5,0,0]);
+    // landing gear: oleo + torque link + brake
+    B.add(cy(.075,.075,.5,8),'steel',[s*1.42,.9,-.3],[0,0,s*.48]); B.add(bx(.04,.3,.04),'metal',[s*1.46,.55,-.22],[0,0,s*.3]);
+    B.add(cy(.16,.16,.04,12),'steel',[s*1.64,.27,-.3],[0,0,HP]);
+    // blade antennas, chaff dispensers, formation light strips
+    B.add(bx(.02,.34,.18),'metal',[s*.3,.92,1.9]); B.add(bx(.24,.2,.5),'olive2',[s*.5,2.95,-6.1]);
+    B.add(bx(.02,.04,1.6),'visor',[s*.5,3.42,-4.4]);
+    // cabin troop bench (rear wall) + floor
+    B.add(bx(.55,.08,.5),'seat',[s*.5,1.45,-1.25]);
+  });
+  B.add(bx(1.0,.5,.12),'seat',[0,1.8,-1.46]); B.add(bx(1.9,.05,.12),'metal',[0,3.02,-.45]); B.add(bx(1.9,.03,2.6),'dark',[0,1.04,-.4]);
+  B.add(cy(.06,.06,.5,8),'steel',[0,3.7,-4.5],[0,0,0]);                       // APU/IFF stub
+  B.add(cy(.02,.02,.6,5),'metal',[.25,3.3,-2.3],[0,0,.2]); B.add(cy(.02,.02,.9,5),'metal',[-.3,3.28,-3.8],[0,0,-.15]);
+  B.add(new THREE.SphereGeometry(.12,8,6),'dark',[0,3.25,-.2]);               // GPS dome
+  B.add(bx(.26,.3,.7),'olive2',[0,2.9,-9.0]);                                  // tail-rotor drive cover
+  B.add(cy(.07,.1,.4,8),'steel',[.2,3.55,-9.1],[0,0,HP]);                      // tail rotor gearbox
+  // flight crew (visible from outside and through the screen)
+  [[.55,0],[-.55,1]].forEach(function(c){
+    const x=c[0];
+    B.add(bx(.38,.5,.26),'suit',[x,1.95,2.32],[-.12,0,0]); B.add(new THREE.SphereGeometry(.12,10,8),'skin',[x,2.37,2.36]); B.add(new THREE.SphereGeometry(.15,12,8,0,Math.PI*2,0,HP+.3),'helmW',[x,2.41,2.34]);
+    B.add(bx(.2,.08,.1),'visor',[x,2.37,2.5]); B.add(bx(.09,.4,.09),'suit',[x-.22*Math.sign(x),1.95,2.62],[-.9,0,0]); B.add(bx(.09,.4,.09),'suit',[x+.22*Math.sign(x),1.95,2.62],[-.9,0,0]);
+    B.add(cy(.015,.015,.5,5),'metal',[x*.55,1.8,2.9],[.25,0,0]);
+  });
+  if(resc){ B.add(bx(.5,.35,.7),'steel',[0,1.0,4.0]); B.add(bx(1.0,.06,.5),'orange',[0,3.28,-8.9]); [1,-1].forEach(function(s){ B.add(bx(.012,.34,1.2),'orange',[s*1.2,2.7,2.2]); }); B.add(cy(.3,.3,.4,12),'steel',[-.85,1.12,3.55],[HP,0,0]); }
+  B.build(M,g,true,true);
 
   // cockpit displays (basic emissive panels, visible from the cockpit camera)
   [.55,-.55].forEach(function(x){ const sc=new THREE.Mesh(new THREE.PlaneGeometry(.34,.26),new THREE.MeshBasicMaterial({color:0x2cff7a})); sc.position.set(x*.8,2.32,3.24); sc.rotation.set(-.45,Math.PI,0); g.add(sc); });
@@ -947,11 +1075,18 @@ function buildHeliModel(parked){
 
   // main rotor
   const rg=new THREE.Group(); rg.position.set(0,4.85,0); g.add(rg);
-  { const hub=new THREE.Mesh(cy(.38,.38,.35,14),HM.dark); hub.castShadow=true; rg.add(hub); }
+  { const hub=new THREE.Mesh(cy(.38,.38,.35,14),HM.dark); hub.castShadow=true; rg.add(hub);
+    const cap=new THREE.Mesh(cy(.2,.3,.16,12),HM.steel); cap.position.y=.26; rg.add(cap);
+    const sw=new THREE.Mesh(cy(.5,.5,.07,18),HM.steel); sw.position.y=-.28; rg.add(sw);
+    const sc=new THREE.Mesh(cy(.1,.1,.55,8),HM.metal); sc.position.set(.28,-.55,.1); rg.add(sc); }
   P.rotorSpin=new THREE.Group(); rg.add(P.rotorSpin);
   for(let i=0;i<4;i++){
     const piv=new THREE.Group(); piv.rotation.y=i*HP; piv.rotation.z=parked?-.06:.035;
     const bl=new THREE.Mesh(bladeGeo,HM.dark); bl.position.x=4.4; bl.castShadow=!parked; piv.add(bl);
+    const cuff=new THREE.Mesh(bgeo(1.1,.14,.4),HM.olive2); cuff.position.x=.95; piv.add(cuff);
+    const brg=new THREE.Mesh(bgeo(.34,.3,.34),HM.rubber); brg.position.x=.5; brg.position.y=-.04; piv.add(brg);
+    const link=new THREE.Mesh(cy(.02,.02,.5,5),HM.steel); link.position.set(.7,-.28,.18); link.rotation.z=.15; piv.add(link);
+    const tab=new THREE.Mesh(bgeo(.9,.02,.1),HM.yellow); tab.position.set(7.35,.0,-.28); piv.add(tab);
     const tip=new THREE.Mesh(tipGeo,HM.yellow); tip.position.x=7.95; piv.add(tip);
     P.rotorSpin.add(piv);
   }
@@ -963,9 +1098,9 @@ function buildHeliModel(parked){
   P.tailDisc=new THREE.Mesh(new THREE.CircleGeometry(1.1,24).rotateY(HP),new THREE.MeshBasicMaterial({color:0x222222,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); trg.add(P.tailDisc);
   // stabilator
   P.stab=new THREE.Group(); P.stab.position.set(0,3.0,-8.15); g.add(P.stab);
-  { const m=new THREE.Mesh(bx(4.2,.08,.95),HM.olive); m.castShadow=true; P.stab.add(m); }
+  { const m=new THREE.Mesh(bx(4.2,.08,.95),M.olive); m.castShadow=true; P.stab.add(m); }
   // sliding doors (olive panel with a window)
-  function door(x){ const d=new THREE.Group(); const m=new THREE.Mesh(bx(.06,1.2,1.45),HM.olive2); m.castShadow=true; d.add(m); const w=new THREE.Mesh(bx(.075,.45,.8),HM.glass); w.position.set(0,.3,0); d.add(w); d.position.set(x,1.95,-.5); g.add(d); return d; }
+  function door(x){ const d=new THREE.Group(); const m=new THREE.Mesh(bx(.06,1.2,1.45),M.olive2); m.castShadow=true; d.add(m); const w=new THREE.Mesh(bx(.075,.45,.8),HM.glass); w.position.set(0,.3,0); d.add(w); d.position.set(x,1.95,-.5); g.add(d); return d; }
   P.doorL=door(1.222); P.doorR=door(-1.222);
   // door gunner and gun (right side)
   P.gunnerG=new THREE.Group(); g.add(P.gunnerG);
@@ -990,11 +1125,172 @@ function buildHeliModel(parked){
   }
   return P;
 }
-const H=buildHeliModel(false);
-const heli=H.g, rotorSpin=H.rotorSpin, rotorDisc=H.rotorDisc, tailSpin=H.tailSpin, tailDisc=H.tailDisc, stab=H.stab, doorL=H.doorL, doorRt=H.doorR, gunner=H.gunnerG, muzzle=H.muzzle, navRed=H.navRed, navGreen=H.navGreen, beacon=H.beacon, strobe=H.strobe, landSpot=H.landSpot, landTarget=H.landTarget;
-scene.add(heli);
+
+/* ===================== additional airframes: AH-64D attack, OH-1 scout ===================== */
+const FUSE_AH=[
+  {z:5.20,hw:.12,yt:1.55,yb:1.35,n:2.0},{z:4.90,hw:.42,yt:1.95,yb:1.20,n:2.4},{z:4.20,hw:.64,yt:2.45,yb:1.10,n:2.8},
+  {z:3.00,hw:.70,yt:2.75,yb:1.05,n:3.0},{z:1.60,hw:.78,yt:2.98,yb:1.05,n:3.2},{z:.20,hw:.90,yt:3.02,yb:1.10,n:3.6},
+  {z:-1.40,hw:.92,yt:3.05,yb:1.20,n:3.8},{z:-2.80,hw:.80,yt:3.00,yb:1.50,n:3.2},{z:-4.50,hw:.55,yt:2.95,yb:2.20,n:2.6},
+  {z:-6.50,hw:.35,yt:3.05,yb:2.60,n:2.3},{z:-8.50,hw:.22,yt:3.20,yb:2.85,n:2.1},{z:-9.40,hw:.14,yt:3.30,yb:3.00,n:2.0}
+];
+function fuseColorAH(x,y,z,s){
+  if(z>.5&&z<4.7&&y>s.yt-.52&&Math.abs(x)<s.hw*.97) return [.03,.05,.07];            // tandem canopy glass
+  if(y<1.45&&z>-3) return [.09,.1,.09];
+  const n=.01*Math.sin(x*8+z*2.7); return [.17+n,.19+n,.15+n];
+}
+const FUSE_GEO_AH=loftGeo(FUSE_AH,16,fuseColorAH);
+const FUSE_OH=[
+  {z:3.60,hw:.08,yt:1.50,yb:1.30,n:2.0},{z:3.30,hw:.34,yt:1.85,yb:1.15,n:2.3},{z:2.60,hw:.56,yt:2.25,yb:1.05,n:2.7},
+  {z:1.40,hw:.66,yt:2.55,yb:1.05,n:3.0},{z:0,hw:.74,yt:2.62,yb:1.10,n:3.4},{z:-1.40,hw:.70,yt:2.58,yb:1.25,n:3.4},
+  {z:-2.80,hw:.50,yt:2.52,yb:1.80,n:2.8},{z:-4.50,hw:.30,yt:2.62,yb:2.20,n:2.4},{z:-6.20,hw:.20,yt:2.76,yb:2.42,n:2.2},{z:-6.80,hw:.12,yt:2.82,yb:2.56,n:2.0}
+];
+function fuseColorOH(x,y,z,s){
+  if(z>.4&&z<3.3&&y>s.yt-.5&&Math.abs(x)<s.hw*.97) return [.03,.05,.07];
+  if(y<1.3&&z>-2.5) return [.1,.11,.09];
+  const n=.01*Math.sin(x*8+z*2.7); return [.2+n,.24+n,.15+n];
+}
+const FUSE_GEO_OH=loftGeo(FUSE_OH,16,fuseColorOH);
+
+function heliCommon(P,g,o){
+  // lights, spotlight, dummy door / gunner groups so every airframe exposes the same parts
+  P.doorL=new THREE.Group(); P.doorR=new THREE.Group(); P.gunnerG=new THREE.Group(); P.gunnerG.visible=false;
+  P.muzzle=new THREE.Object3D(); P.muzzle.position.set(o.mz[0],o.mz[1],o.mz[2]); g.add(P.muzzle);
+  P.navRed=sprGlow(0xff2a2a,1.0); P.navRed.position.set(o.wing,o.wy,o.wz); g.add(P.navRed);
+  P.navGreen=sprGlow(0x2aff5a,1.0); P.navGreen.position.set(-o.wing,o.wy,o.wz); g.add(P.navGreen);
+  P.beacon=sprGlow(0xff3030,1.6); P.beacon.position.set(0,o.fin,-o.tail); g.add(P.beacon);
+  P.strobe=sprGlow(0xffffff,2.0); P.strobe.position.set(0,o.fin-.5,-o.tail); g.add(P.strobe);
+  if(o.parked){ P.navRed.visible=P.navGreen.visible=P.beacon.visible=P.strobe.visible=false; }
+  else{
+    P.landSpot=new THREE.SpotLight(0xfff2d0,0,170,.5,.55,1.0); P.landSpot.position.set(0,1.0,o.mz[2]-.5); g.add(P.landSpot);
+    P.landTarget=new THREE.Object3D(); P.landTarget.position.set(0,-9,40); g.add(P.landTarget); P.landSpot.target=P.landTarget;
+  }
+}
+function rotorHead(P,g,y,z,rad,blades,parked,tipMat){
+  const rg=new THREE.Group(); rg.position.set(0,y,z); g.add(rg);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.3,14),HM.dark); hub.castShadow=true; rg.add(hub);
+  const sw=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.06,16),HM.steel); sw.position.y=-.25; rg.add(sw);
+  P.rotorSpin=new THREE.Group(); rg.add(P.rotorSpin);
+  const bg=new THREE.BoxGeometry(rad-.7,.04,.46);
+  for(let i=0;i<blades;i++){
+    const piv=new THREE.Group(); piv.rotation.y=i*Math.PI*2/blades; piv.rotation.z=parked?-.06:.035;
+    const bl=new THREE.Mesh(bg,HM.dark); bl.position.x=.7+(rad-.7)/2; bl.castShadow=!parked; piv.add(bl);
+    const tp=new THREE.Mesh(new THREE.BoxGeometry(.5,.05,.46),tipMat||HM.yellow); tp.position.x=rad-.25; piv.add(tp);
+    const cf=new THREE.Mesh(bgeo(.8,.12,.34),HM.olive2); cf.position.x=.55; piv.add(cf);
+    P.rotorSpin.add(piv);
+  }
+  P.rotorDisc=new THREE.Mesh(new THREE.CircleGeometry(rad+.2,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x1b1b1b,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); rg.add(P.rotorDisc);
+  return rg;
+}
+function tailRotor(P,g,x,y,z,len){
+  const trg=new THREE.Group(); trg.position.set(x,y,z); g.add(trg);
+  P.tailSpin=new THREE.Group(); trg.add(P.tailSpin);
+  for(let i=0;i<2;i++){ const bl=new THREE.Mesh(bgeo(.04,len,.15),HM.dark); bl.rotation.x=i*Math.PI/2+.4; P.tailSpin.add(bl); }
+  P.tailDisc=new THREE.Mesh(new THREE.CircleGeometry(len/2,24).rotateY(Math.PI/2),new THREE.MeshBasicMaterial({color:0x222222,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); trg.add(P.tailDisc);
+}
+function crewHead(B,x,y,z,helm){ B.add(new THREE.SphereGeometry(.12,10,8),'skin',[x,y,z]); B.add(new THREE.SphereGeometry(.155,12,8,0,Math.PI*2,0,Math.PI/2+.3),helm||'helmW',[x,y+.04,z-.01]); B.add(bgeo(.2,.07,.1),'visor',[x,y,z+.14]); B.add(bgeo(.34,.34,.24),'suit',[x,y-.34,z-.05]); }
+
+function buildAH64(parked){
+  const g=new THREE.Group(); g.rotation.order='YXZ';
+  const B=new Batch(), P={g:g}, HP=Math.PI/2;
+  const cy=function(r0,r1,len,seg){ return new THREE.CylinderGeometry(r0,r1,len,seg||10); }, bx=bgeo;
+  B.add(FUSE_GEO_AH,'body');
+  [1,-1].forEach(function(s){
+    B.add(cy(.36,.4,3.1,12),'olive',[s*.84,3.22,-.6],[HP,0,0]);              // engine nacelles
+    B.add(cy(.3,.3,.08,12),'dark',[s*.84,3.22,.98],[HP,0,0]);
+    B.add(cy(.22,.3,1.0,10),'dark',[s*.84,3.12,-2.5],[HP,0,0]);                // IR-suppressed exhaust
+    B.add(bx(.5,.3,2.2),'olive',[s*.62,2.75,-.2]);                               // nacelle fairing
+    B.add(bx(2.0,.09,1.05),'olive',[s*1.75,1.85,.35]);                            // stub wing
+    B.add(bx(.08,.28,.5),'metal',[s*1.15,1.66,.4]); B.add(bx(.08,.28,.5),'metal',[s*2.45,1.66,.4]);
+    B.add(cy(.2,.2,1.95,10),'olive2',[s*1.15,1.42,.55],[HP,0,0]);              // 70mm rocket pod
+    B.add(new THREE.SphereGeometry(.2,10,8),'dark',[s*1.15,1.42,1.55]);
+    for(let j=0;j<2;j++) for(let k=0;k<2;k++) B.add(cy(.085,.085,1.75,8),'olive2',[s*(2.3+k*.17),1.32+j*.18,.55],[HP,0,0]);  // Hellfire rails
+    B.add(cy(.06,.06,.9,6),'metal',[s*.98,.72,.45],[0,0,s*.22]);                // main gear
+    B.add(cy(.26,.26,.2,14),'tire',[s*1.06,.27,.15],[0,0,HP]);
+    B.add(bx(.03,.2,.7),'dark',[s*.62,2.1,2.9],[0,0,0]);
+    B.add(bx(.12,.05,.5),'steel',[s*.78,3.5,.4]);                                // blade antenna / exhaust deck
+  });
+  crewHead(B,0,2.52,3.55); crewHead(B,0,2.92,1.55);
+  B.add(cy(.17,.2,1.1,10),'dark',[0,4.15,.1]); B.add(cy(.26,.3,.34,12),'dark',[0,5.0,.1]);       // mast + Longbow radar dome
+  B.add(new THREE.SphereGeometry(.34,12,8,0,Math.PI*2,0,HP),'dark',[0,5.15,.1]);
+  B.add(new THREE.SphereGeometry(.32,12,10),'dark',[0,1.5,4.85]); B.add(bx(.18,.22,.3),'dark',[0,1.28,4.55]);   // TADS/PNVS turret
+  B.add(new THREE.SphereGeometry(.17,10,8),'dark',[0,2.22,5.0]);
+  B.add(bx(.36,.3,.8),'metal',[0,.95,3.7]); B.add(cy(.045,.045,1.9,8),'metal',[0,.92,4.9],[HP,0,0]);              // M230 chain gun
+  B.add(cy(.05,.04,.5,6),'metal',[0,3.55,3.5],[.1,0,0]);                                                          // pitot
+  B.add(bx(.1,2.1,1.5),'olive',[0,4.45,-8.85],[-.5,0,0]); B.add(bx(.12,.12,.9),'dark',[0,5.45,-9.3]);            // tail fin
+  B.add(bx(.3,.5,.4),'dark',[.2,3.7,-9.0]);
+  B.add(cy(.06,.05,.5,6),'metal',[0,.4,-7.7]); B.add(cy(.17,.17,.12,12),'tire',[0,.2,-7.7],[0,0,HP]);            // tail wheel
+  B.add(bx(1.6,.05,.4),'dark',[0,3.28,-9.0]);                                                                     // strobe base
+  [1,-1].forEach(function(s){ B.add(bx(.012,.03,5.5),'dark',[s*.915,2.7,-.2]); B.add(bx(.04,.3,.3),'steel',[s*.9,2.0,3.2]); });
+  B.build(HM,g,true,true);
+  const hm=new THREE.MeshBasicMaterial({color:0xc4161c,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  [1,-1].forEach(function(s){ const h=new THREE.Mesh(new THREE.CircleGeometry(.26,22),hm); h.position.set(s*.925,2.6,-3.4); h.rotation.y=s*HP; g.add(h); });
+  rotorHead(P,g,4.3,.1,7.3,4,parked,HM.dark);
+  tailRotor(P,g,.3,3.5,-9.0,1.9);
+  P.stab=new THREE.Group(); P.stab.position.set(0,3.0,-8.3); g.add(P.stab);
+  { const m=new THREE.Mesh(bx(3.6,.07,.8),HM.olive); m.castShadow=true; P.stab.add(m); }
+  heliCommon(P,g,{mz:[0,.92,5.9],wing:2.75,wy:1.85,wz:.6,fin:5.5,tail:9.3,parked:parked});
+  return P;
+}
+function buildOH1(parked){
+  const g=new THREE.Group(); g.rotation.order='YXZ';
+  const B=new Batch(), P={g:g}, HP=Math.PI/2;
+  const cy=function(r0,r1,len,seg){ return new THREE.CylinderGeometry(r0,r1,len,seg||10); }, bx=bgeo;
+  B.add(FUSE_GEO_OH,'body');
+  [1,-1].forEach(function(s){
+    B.add(cy(.26,.3,2.2,12),'olive',[s*.5,2.86,-.9],[HP,0,0]);                 // slim engine cowls
+    B.add(cy(.16,.22,.7,10),'dark',[s*.5,2.8,-2.2],[HP,0,0]);
+    B.add(bx(1.5,.07,.7),'olive',[s*1.1,1.9,.2]); B.add(bx(.07,.22,.4),'metal',[s*1.85,1.78,.2]);
+    B.add(cy(.1,.1,1.7,8),'olive2',[s*1.85,1.62,.3],[HP,0,0]); B.add(new THREE.SphereGeometry(.1,8,6),'dark',[s*1.85,1.62,1.17]);   // AAM pod
+    // skids
+    B.add(cy(.045,.045,3.4,8),'metal',[s*.92,.08,.3],[HP,0,0]);
+    B.add(cy(.04,.04,.9,6),'metal',[s*.82,.5,1.2],[0,0,s*.35]); B.add(cy(.04,.04,.9,6),'metal',[s*.82,.5,-.6],[0,0,s*.35]);
+  });
+  B.add(cy(.035,.035,1.8,6),'metal',[0,.9,1.2],[0,0,HP]); B.add(cy(.035,.035,1.8,6),'metal',[0,.9,-.6],[0,0,HP]);   // cross tubes
+  crewHead(B,0,2.2,2.25); crewHead(B,0,2.55,.8);
+  B.add(cy(.12,.15,.8,10),'dark',[0,3.1,.0]); B.add(new THREE.SphereGeometry(.26,12,10),'dark',[0,3.6,.0]);            // mast-mounted sight
+  B.add(bx(.3,.28,.6),'metal',[0,1.0,2.8]); B.add(cy(.04,.04,1.3,8),'metal',[0,.95,3.7],[HP,0,0]);                    // 20 mm nose gun
+  B.add(new THREE.SphereGeometry(.2,10,8),'dark',[0,1.55,3.3]);
+  B.add(bx(.09,1.6,1.2),'olive',[0,3.5,-6.35],[-.45,0,0]); B.add(bx(.3,.4,.3),'dark',[.15,2.85,-6.8]);
+  B.build(HM,g,true,true);
+  const hm=new THREE.MeshBasicMaterial({color:0xc4161c,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  [1,-1].forEach(function(s){ const h=new THREE.Mesh(new THREE.CircleGeometry(.22,22),hm); h.position.set(s*.745,2.0,-1.2); h.rotation.y=s*HP; g.add(h); });
+  rotorHead(P,g,3.7,.0,5.8,4,parked,HM.dark);
+  tailRotor(P,g,.3,2.8,-6.8,1.5);
+  P.stab=new THREE.Group(); P.stab.position.set(0,2.55,-5.6); g.add(P.stab);
+  { const m=new THREE.Mesh(bx(2.6,.06,.6),HM.olive); m.castShadow=true; P.stab.add(m); }
+  heliCommon(P,g,{mz:[0,.95,4.4],wing:1.95,wy:1.9,wz:.2,fin:4.3,tail:6.8,parked:parked});
+  return P;
+}
+function buildHeliModel(parked,vid){
+  if(vid==='ah64') return buildAH64(parked);
+  if(vid==='oh1') return buildOH1(parked);
+  return buildUH60(parked,vid==='uh60j'?'rescue':'');
+}
+
+/* ===================== vehicles (unlockable with points) ===================== */
+const VEH={
+  uh60ja:{id:'uh60ja',name:'UH-60JA',kana:'陸自 多用途ヘリ',price:0,att:1,yaw:1,pw:1,drag:1,climb:1,armor:1,winch:1,cabin:true,cock:[-.5,2.55,3.0],mz:[-1.55,2.02,1.3],
+    gun:{dmg:2.4,rate:11,pow:1,spd:480},rk:null,hp:'標準',desc:'万能機。ドアガン・ラペル・ウインチ・吊下げの全作戦に対応。',stat:{speed:3,agil:3,armor:3,fire:2,util:5}},
+  uh60j:{id:'uh60j',name:'UH-60J 救難型',kana:'捜索救難ヘリ',price:600,att:1.04,yaw:1.05,pw:1.04,drag:.97,climb:1.05,armor:1,winch:1.7,cabin:true,cock:[-.5,2.55,3.0],mz:[-1.55,2.02,1.3],
+    gun:{dmg:2.2,rate:11,pow:1,spd:480},rk:null,desc:'白・橙の救難塗装。ウインチ速度1.7倍、機動もやや向上。',stat:{speed:3,agil:3,armor:3,fire:2,util:5}},
+  oh1:{id:'oh1',name:'OH-1 ニンジャ',kana:'観測ヘリ',price:2200,att:1.42,yaw:1.45,pw:1.32,drag:.78,climb:1.4,armor:1.35,winch:1,cabin:false,cock:[0,2.3,1.6],mz:[0,.95,4.4],
+    gun:{dmg:1.6,rate:17,pow:.7,spd:520},rk:null,desc:'小型・高機動。被弾には弱いが高速で旋回に優れる。タイマン向き。',stat:{speed:5,agil:5,armor:1,fire:3,util:1}},
+  ah64:{id:'ah64',name:'AH-64D アパッチ',kana:'攻撃ヘリ',price:5000,att:1.07,yaw:1.0,pw:1.18,drag:.88,climb:1.12,armor:.68,winch:1,cabin:false,cock:[0,2.85,1.6],mz:[0,.92,5.9],
+    gun:{dmg:3.4,rate:9,pow:2,spd:560},rk:{n:14,pos:[1.15,1.42,1.9]},desc:'30mmチェーンガンとロケット弾14発。装甲が厚く火力は随一。',stat:{speed:4,agil:2,armor:5,fire:5,util:1}}
+};
+VEH.order=['uh60ja','uh60j','oh1','ah64']; VEH.cur=VEH.uh60ja;
+let H=null, rotorSpin, rotorDisc, tailSpin, tailDisc, stab, doorL, doorRt, gunner, muzzle, navRed, navGreen, beacon, strobe, landSpot, landTarget;
+const heli=new THREE.Group(); heli.rotation.order='YXZ'; scene.add(heli);
+function setVehicle(id){
+  const V=VEH[id]||VEH.uh60ja; if(H&&VEH.cur===V&&H.vid===V.id) return;
+  const wasVis=heli.visible; if(H&&H.g) heli.remove(H.g);
+  VEH.cur=V; H=buildHeliModel(false,V.id); H.vid=V.id; heli.add(H.g); heli.visible=wasVis;
+  rotorSpin=H.rotorSpin; rotorDisc=H.rotorDisc; tailSpin=H.tailSpin; tailDisc=H.tailDisc; stab=H.stab; doorL=H.doorL; doorRt=H.doorR; gunner=H.gunnerG; muzzle=H.muzzle;
+  navRed=H.navRed; navGreen=H.navGreen; beacon=H.beacon; strobe=H.strobe; landSpot=H.landSpot; landTarget=H.landTarget;
+}
+setVehicle('uh60ja');
 (function parkedAircraft(){
-  parkedSpots.forEach(function(sp){ const p=buildHeliModel(true); p.g.position.set(sp[0],AF,sp[1]); p.g.rotation.y=sp[2]; p.rotorSpin.rotation.y=sp[2]*2; p.doorL.position.z=-.5-1.5; scene.add(p.g); });
+  parkedSpots.forEach(function(sp,i){ const p=buildHeliModel(true,i?'oh1':'uh60ja'); p.g.position.set(sp[0],AF,sp[1]); p.g.rotation.y=sp[2]; p.rotorSpin.rotation.y=sp[2]*2; p.doorL.position.z=-.5-1.5; scene.add(p.g); });
 })();
 /* ===================== state ===================== */
 const HELI_M=7000;                                   // kg, used for load reaction
@@ -1006,7 +1302,8 @@ const S = {
   doorR:0, doorRT:0, doorL:0, doorLT:0,
   light:0, nvg:false, cam:0, tod:17.4, weather:'clear', time:0, score:0,
   troops:8, rappelCD:0, onGround:true, tq:0, agl:0, nz:1, maxG:1, shots:0, hits:0,
-  loadAcc:new THREE.Vector3(), serviceMsg:false, winch:0, hull:100, underFire:0, hold:new THREE.Vector3(), holdOn:false
+  loadAcc:new THREE.Vector3(), serviceMsg:false, winch:0, hull:100, underFire:0, hold:new THREE.Vector3(), holdOn:false,
+  inv:0, noFire:false, lastAtk:null
 };
 const IN = {cx:0,cy:0,ped:0,climb:0,fire:false};
 const WEATHER = {
@@ -1133,9 +1430,9 @@ function segDist2(a,b,c){
 function shoot(){
   const t=tracerPool.find(function(o){ return !o.on; }); if(!t) return;
   muzzle.getWorldPosition(tmpA);
-  heli.localToWorld(tmpB.set(0,2.2,320));
+  heli.localToWorld(tmpB.set(0,VEH.cur.mz[1]+.2,320));
   tmpC.copy(tmpB).sub(tmpA).normalize(); tmpC.x+=rnd(-.004,.004); tmpC.y+=rnd(-.004,.004); tmpC.z+=rnd(-.004,.004); tmpC.normalize();
-  t.on=true; t.life=2.4; t.vel.copy(tmpC).multiplyScalar(480).add(S.vel);
+  t.on=true; t.life=2.4; t.vel.copy(tmpC).multiplyScalar(VEH.cur.gun.spd).add(S.vel);
   t.mesh.position.copy(tmpA); t.mesh.visible=true; t.mesh.lookAt(tmpA.clone().add(t.vel));
   spawnFx({pos:tmpA,vel:S.vel.clone(),s0:.9,s1:1.8,life:.07,color:0xffd070,op:1,add:true});
   const cs=new THREE.Vector3(-Math.cos(S.yaw),0,Math.sin(S.yaw)).multiplyScalar(rnd(2,4)).add(S.vel); cs.y+=rnd(1,3);
@@ -1144,14 +1441,15 @@ function shoot(){
 }
 function gunStep(dt){
   if(S.crashed) return;
-  if(IN.fire && S.doorRT<1){ S.doorRT=1; S.doorLT=1; }
-  if(IN.fire && S.doorR>.75){ gunAcc+=dt; while(gunAcc>=GUN_DT){ gunAcc-=GUN_DT; shoot(); } } else gunAcc=Math.min(gunAcc,GUN_DT);
+  const V=VEH.cur, gdt=1/V.gun.rate;
+  if(IN.fire && V.cabin && S.doorRT<1){ S.doorRT=1; S.doorLT=1; }
+  if(IN.fire && (!V.cabin||S.doorR>.75) && !S.noFire){ gunAcc+=dt; while(gunAcc>=gdt){ gunAcc-=gdt; shoot(); } } else gunAcc=Math.min(gunAcc,gdt);
   for(let i=0;i<tracerPool.length;i++){
     const t=tracerPool[i]; if(!t.on) continue;
     const prev=tmpA.copy(t.mesh.position);
     t.mesh.position.addScaledVector(t.vel,dt); t.life-=dt;
     let hit=false;
-    for(let k=0;k<targets.length&&!hit;k++){ const tg=targets[k]; if(tg.alive && segDist2(prev,t.mesh.position,tg.c)<tg.r*tg.r){ hit=true; Ops.targetHit(tg); } }
+    for(let k=0;k<targets.length&&!hit;k++){ const tg=targets[k]; if(tg.alive && segDist2(prev,t.mesh.position,tg.c)<tg.r*tg.r){ hit=true; Ops.targetHit(tg,VEH.cur.gun.pow); } }
     const p=t.mesh.position, gy=groundY(p.x,p.z);
     if(!hit && p.y<gy){ hit=true; const dust=terrainH(p.x,p.z)<.3?0xffffff:0xa89c78; spawnFx({pos:new THREE.Vector3(p.x,gy+.3,p.z),vel:new THREE.Vector3(0,3,0),s0:1.2,s1:5,life:.8,color:dust,op:.55}); }
     if(hit||t.life<=0){ t.on=false; t.mesh.visible=false; }
@@ -1211,9 +1509,72 @@ function loadStep(dt){
   }
 }
 
-/* ===================== troops (rappel) ===================== */
-const rope=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1,6),new THREE.MeshStandardMaterial({color:0x222222})); rope.visible=false; scene.add(rope);
-let ropeT=0;
+/* ===================== troops (fast-rope infantry) ===================== */
+const SM={
+  uni:stdMat(0x59623c,.92), uni2:stdMat(0x474f2f,.92), vest:stdMat(0x3a4030,.85), pack:stdMat(0x4a4d36,.9), helm:stdMat(0x4d5640,.7),
+  boot:stdMat(0x1b1814,.8), glove:stdMat(0x222222,.8), skin:stdMat(0xd2a982,.8), gun:stdMat(0x1b1c1a,.5,.35), nvg:stdMat(0x111111,.4,.5), tape:stdMat(0xd8d2a0,.7)
+};
+function makeSoldier(idx){
+  const g=new THREE.Group(), J={};
+  const part=function(geo,mat,x,y,z,par){ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.castShadow=true; (par||g).add(m); return m; };
+  const grp=function(x,y,z,par){ const o=new THREE.Group(); o.position.set(x,y,z); (par||g).add(o); return o; };
+  const hips=grp(0,.95,0); J.hips=hips;
+  part(bgeo(.34,.2,.2),SM.uni2,0,0,0,hips);
+  [-1,1].forEach(function(s){
+    const th=grp(s*.1,-.04,0,hips), kn=grp(0,-.43,0,th);
+    part(bgeo(.16,.45,.18),SM.uni2,0,-.21,0,th); part(bgeo(.1,.14,.08),SM.vest,s*.0,-.17,.095,th);   // thigh + knee-side pocket
+    part(bgeo(.13,.43,.14),SM.uni2,0,-.2,0,kn); part(bgeo(.15,.1,.3),SM.boot,0,-.44,.06,kn); part(bgeo(.14,.12,.14),SM.boot,0,-.38,-.0,kn);
+    part(bgeo(.17,.07,.17),SM.vest,0,-.03,.02,kn);                                                // knee pad
+    J['th'+(s<0?'L':'R')]=th; J['kn'+(s<0?'L':'R')]=kn;
+  });
+  const torso=grp(0,.06,0,hips); J.torso=torso;
+  part(bgeo(.4,.5,.22),SM.uni,0,.3,0,torso);
+  part(bgeo(.44,.4,.27),SM.vest,0,.32,.01,torso);                                                  // plate carrier
+  [-.13,0,.13].forEach(function(x){ part(bgeo(.1,.14,.07),SM.pack,x,.2,.16,torso); });            // mag pouches
+  part(bgeo(.12,.1,.06),SM.pack,.15,.44,.16,torso);                                               // radio pouch
+  part(bgeo(.32,.42,.17),SM.pack,0,.34,-.21,torso);                                               // rucksack
+  part(bgeo(.34,.08,.18),SM.pack,0,.58,-.21,torso);                                               // rolled mat
+  part(bgeo(.46,.05,.28),SM.uni2,0,.02,0,torso);                                                  // belt
+  const neck=grp(0,.56,0,torso); part(bgeo(.1,.08,.1),SM.skin,0,.02,0,neck);
+  const head=grp(0,.1,0,neck); J.head=head;
+  part(new THREE.SphereGeometry(.105,10,8),SM.skin,0,.07,0,head);
+  part(new THREE.SphereGeometry(.14,12,8,0,Math.PI*2,0,Math.PI*.56),SM.helm,0,.09,-.005,head);   // helmet shell
+  part(bgeo(.3,.03,.3),SM.helm,0,.07,.0,head).scale.set(1,1,1);                                   // brim
+  part(bgeo(.06,.06,.07),SM.nvg,0,.14,.14,head);                                                  // NVG mount
+  part(bgeo(.2,.02,.02),SM.tape,0,.04,.145,head);                                                 // ident band
+  [-1,1].forEach(function(s){
+    const sh=grp(s*.26,.5,0,torso), el=grp(0,-.29,0,sh);
+    part(bgeo(.11,.3,.11),SM.uni,0,-.14,0,sh); part(bgeo(.095,.28,.095),SM.uni,0,-.14,0,el); part(bgeo(.1,.09,.11),SM.glove,0,-.3,0,el);
+    J['sh'+(s<0?'L':'R')]=sh; J['el'+(s<0?'L':'R')]=el;
+  });
+  // rifle (Type 89 style) carried on the chest sling
+  const rf=grp(0,.32,.2,torso); J.rifle=rf;
+  part(bgeo(.05,.09,.62),SM.gun,0,0,.18,rf); part(bgeo(.05,.05,.3),SM.gun,0,.01,.6,rf); part(bgeo(.045,.16,.07),SM.gun,0,-.11,.12,rf); part(bgeo(.05,.1,.22),SM.gun,0,-.02,-.2,rf);
+  J.ph=idx*1.7; g.userData.J=J; return g;
+}
+const POSE={
+  slide:{thL:-.35,thR:-.1,knL:.7,knR:.35,shL:-2.95,shR:-2.95,elL:-.25,elR:-.25,shLz:-.12,shRz:.12,lean:-.05,hipY:.95,rifle:[.5,0,0]},
+  exit :{thL:-.9,thR:-.5,knL:.9,knR:.7,shL:-2.4,shR:-2.4,elL:-.4,elR:-.4,shLz:-.1,shRz:.1,lean:-.25,hipY:.95,rifle:[.5,0,0]},
+  land :{thL:-1.15,thR:-1.0,knL:1.5,knR:1.4,shL:-.9,shR:-.9,elL:-.9,elR:-.9,shLz:0,shRz:0,lean:.45,hipY:.62,rifle:[0,0,0]},
+  stand:{thL:-.05,thR:.05,knL:.05,knR:.1,shL:-.9,shR:-1.0,elL:-1.15,elR:-1.3,shLz:0,shRz:0,lean:.08,hipY:.95,rifle:[0,0,0]},
+  kneel:{thL:-1.4,thR:.25,knL:1.5,knR:1.4,shL:-1.35,shR:-1.2,elL:-.55,elR:-1.55,shLz:.12,shRz:-.05,lean:.12,hipY:.64,rifle:[-.05,.0,0]},
+  jump :{thL:-.5,thR:-.2,knL:.8,knR:.4,shL:-.4,shR:-.4,elL:-1.1,elR:-1.1,shLz:0,shRz:0,lean:.1,hipY:.95,rifle:[0,0,0]}
+};
+function posePerson(g,name,ph,sc){
+  const J=g.userData.J, P=POSE[name]; if(!J||!P) return;
+  let thL=P.thL,thR=P.thR,knL=P.knL,knR=P.knR,shL=P.shL,shR=P.shR,elL=P.elL,elR=P.elR,lean=P.lean,hipY=P.hipY,bob=0;
+  if(name==='run'){ const s=Math.sin(ph), c=Math.cos(ph);
+    thL=-s*.95; thR=s*.95; knL=Math.max(0,s)*1.2+.2; knR=Math.max(0,-s)*1.2+.2; shL=-.8+c*.18; shR=-.9-c*.18; elL=-1.2; elR=-1.35; lean=.2; hipY=.93; bob=Math.abs(c)*.06; }
+  else if(name==='stand'&&sc){ const s=Math.sin(sc*.9+J.ph); J.head.rotation.y=s*.7; }
+  if(name==='kneel'&&sc){ J.head.rotation.y=Math.sin(sc*.8+J.ph)*.55; } else if(name!=='stand') J.head.rotation.y*=.8;
+  if(name==='slide'){ J.head.rotation.x=-.3; } else J.head.rotation.x=0;
+  J.thL.rotation.x=thL; J.thR.rotation.x=thR; J.knL.rotation.x=knL; J.knR.rotation.x=knR;
+  J.shL.rotation.x=shL; J.shR.rotation.x=shR; J.shL.rotation.z=P.shLz; J.shR.rotation.z=P.shRz; J.elL.rotation.x=elL; J.elR.rotation.x=elR;
+  J.torso.rotation.x=lean; J.hips.position.y=hipY+bob; J.rifle.rotation.set(P.rifle[0],P.rifle[1],P.rifle[2]);
+}
+const ropes=[-1,1].map(function(){ const m=new THREE.Mesh(new THREE.CylinderGeometry(.028,.028,1,6),new THREE.MeshStandardMaterial({color:0x5a5a48,roughness:.9})); m.visible=false; scene.add(m); return m; });
+const ropeT=[0,0]; let troopN=0;
+function ropeAnchor(side,out){ heli.updateMatrixWorld(true); return heli.localToWorld(out.set(-side*1.95,1.75,-.5)); }   // side -1 = right door (-x local)
 function deployTroop(){
   if(S.crashed||!S.started||S.paused) return false;
   if(S.troops<=0){ toast('兵員なし。ホームパッドで補給してください'); return false; }
@@ -1221,35 +1582,49 @@ function deployTroop(){
   if(agl>32||spd>25){ toast('降下条件: 対地高度32m以下・速度25kt以下'); return false; }
   if(S.doorRT<1){ S.doorRT=1; S.doorLT=1; toast('ドア開放。もう一度押してください'); return false; }
   if(S.doorR<.8||S.rappelCD>0) return false;
-  S.rappelCD=.8; S.troops--;
-  heli.updateMatrixWorld(true);
-  const p=heli.localToWorld(new THREE.Vector3(-1.5,1.9,-.5));
-  const g=makePerson(0x4a5632,true); g.position.copy(p); scene.add(g);
-  const onG=agl<2.5; if(onG) g.position.y=gy;
-  troopsA.push({g:g,mode:onG?'run':'rope',tgt:null,t:0});
-  ropeT=3.5; return true;
+  S.rappelCD=.9; S.troops--;
+  const side=(troopN++%2)?1:-1, a=ropeAnchor(side,new THREE.Vector3());
+  const g=makeSoldier(troopN); g.position.set(a.x,a.y-.6,a.z); scene.add(g);
+  const onG=agl<2.5;
+  const t={g:g,mode:onG?'jump':'exit',side:side,tgt:null,t:0,v:1.2,ph:troopN*1.3,slot:troopN-1};
+  if(onG){ g.position.y=gy; }
+  troopsA.push(t); ropeT[side<0?0:1]=4; return true;
 }
+function troopSlot(t){ const n=Math.max(1,troopsA.length); const a=S.yaw+Math.PI*.5+t.slot*(Math.PI*2/8)+(t.side<0?0:.2); const d=11+(t.slot%2)*5; return {x:t.base.x+Math.sin(a)*d, z:t.base.z+Math.cos(a)*d, a:a}; }
 function updateTroops(dt){
   S.rappelCD=Math.max(0,S.rappelCD-dt);
-  heli.updateMatrixWorld(true);
-  const door=heli.localToWorld(tmpA.set(-1.5,1.9,-.5)).clone();
-  let anyRope=false;
+  const used=[false,false];
   for(let i=0;i<troopsA.length;i++){
-    const t=troopsA[i], g=t.g, gy=groundY(g.position.x,g.position.z);
-    if(t.mode==='rope'){
-      anyRope=true; g.position.x=door.x; g.position.z=door.z; g.position.y-=4.5*dt;
-      if(g.position.y<=gy){ g.position.y=gy; t.mode='run'; }
+    const t=troopsA[i], g=t.g, gy=groundY(g.position.x,g.position.z); t.t+=dt;
+    const si=t.side<0?0:1;
+    if(t.mode==='exit'||t.mode==='rope'){
+      used[si]=true; const a=ropeAnchor(t.side,tmpA);
+      g.position.x+=(a.x-g.position.x)*Math.min(1,dt*9); g.position.z+=(a.z-g.position.z)*Math.min(1,dt*9);
+      g.rotation.y=S.yaw+(t.side<0?-Math.PI/2:Math.PI/2);          // face the open door side while sliding
+      if(t.mode==='exit'){ posePerson(g,t.t<.25?'exit':'slide',0); if(t.t>.45){ t.mode='rope'; t.t=0; } continue; }
+      const h=g.position.y-gy;
+      t.v=Math.min(t.v+7*dt,Math.min(6.2,Math.max(1.3,h*1.7)));
+      g.position.y-=t.v*dt; posePerson(g,'slide',0);
+      if(g.position.y<=gy+.02){ g.position.y=gy; t.mode='land'; t.t=0; t.base=g.position.clone(); ropeT[si]=Math.max(ropeT[si],1.5);
+        for(let k=0;k<3;k++) spawnFx({pos:new THREE.Vector3(g.position.x,gy+.3,g.position.z),vel:new THREE.Vector3(rnd(-2,2),rnd(.4,1.6),rnd(-2,2)),s0:.8,s1:3.4,life:1.1,color:0xb9ab8c,op:.5}); }
     }
-    if(t.mode==='run'){
-      if(!t.tgt){ const rx=-Math.cos(S.yaw), rz=Math.sin(S.yaw), d=rnd(9,16), a=rnd(-.6,.6); t.tgt=new THREE.Vector3(g.position.x+(rx*Math.cos(a)-rz*Math.sin(a))*d,0,g.position.z+(rz*Math.cos(a)+rx*Math.sin(a))*d); }
+    else if(t.mode==='jump'){ posePerson(g,'jump',0); if(t.t>.35){ t.mode='land'; t.t=0; t.base=g.position.clone(); } }
+    else if(t.mode==='land'){ posePerson(g,'land',0); g.position.y=gy; if(t.t>.45){ t.mode='run'; t.t=0; t.tgt=troopSlot(t); } }
+    else if(t.mode==='run'){
       const dx=t.tgt.x-g.position.x, dz=t.tgt.z-g.position.z, dist=Math.hypot(dx,dz);
-      if(dist<.6){ t.mode='stand'; g.scale.y=.85; }
-      else{ g.position.x+=dx/dist*3.2*dt; g.position.z+=dz/dist*3.2*dt; g.rotation.y=Math.atan2(dx,dz); t.t+=dt; g.position.y=groundY(g.position.x,g.position.z)+Math.abs(Math.sin(t.t*9))*.08; }
+      if(dist<.5){ t.mode='hold'; t.t=0; t.hold=(t.slot%2)?'kneel':'stand'; }
+      else{ const sp=4.6; g.position.x+=dx/dist*sp*dt; g.position.z+=dz/dist*sp*dt; g.rotation.y=Math.atan2(dx,dz); t.ph+=dt*11; g.position.y=groundY(g.position.x,g.position.z); posePerson(g,'run',t.ph); }
+    }
+    else if(t.mode==='hold'){
+      const want=t.tgt.a, d=((want-g.rotation.y+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI; g.rotation.y+=d*Math.min(1,dt*6);
+      g.position.y=groundY(g.position.x,g.position.z); posePerson(g,t.hold,S.time+i);
     }
   }
-  ropeT=Math.max(0,ropeT-dt);
-  const gyH=groundY(door.x,door.z), h=door.y-gyH;
-  if((anyRope||ropeT>0)&&h>2.5&&h<45){ rope.visible=true; rope.scale.set(1,h,1); rope.position.set(door.x,door.y-h/2,door.z); } else rope.visible=false;
+  for(let s=0;s<2;s++){
+    ropeT[s]=Math.max(0,ropeT[s]-dt); const r=ropes[s];
+    const sd=s?1:-1, a=ropeAnchor(sd,tmpB), gyH=groundY(a.x,a.z), h=Math.min(a.y-gyH,34);
+    if((used[s]||ropeT[s]>0)&&h>2.5&&S.doorR>.5){ r.visible=true; r.scale.set(1,h,1); r.position.set(a.x,a.y-h/2,a.z); } else r.visible=false;
+  }
 }
 
 /* ===================== helicopter lifecycle ===================== */
@@ -1261,7 +1636,7 @@ function resetHeli(){
   heli.visible=true; crashSmoke=null; extraTurb.set(0,0,0);
   clearLoads();
   for(const d of debris) scene.remove(d.m); debris.length=0;
-  for(const t of troopsA) scene.remove(t.g); troopsA.length=0; rope.visible=false;
+  for(const t of troopsA) scene.remove(t.g); troopsA.length=0; ropes.forEach(function(r){ r.visible=false; }); ropeT[0]=ropeT[1]=0;
   syncHeli(); camSnap=true;
   syncButtons();
 }
@@ -1303,9 +1678,10 @@ function physics(dt){
     const hF=groundY(S.pos.x+fx*3,S.pos.z+fz*3), hB=groundY(S.pos.x-fx*3,S.pos.z-fz*3), hL=groundY(S.pos.x+lx*1.6,S.pos.z+lz*1.6), hR=groundY(S.pos.x-lx*1.6,S.pos.z-lz*1.6);
     sp0=clamp(-Math.atan2(hF-hB,6),-.3,.3); sr0=clamp(Math.atan2(hL-hR,3.2),-.3,.3);
   }
-  S.pitch+=(IN.cy*.46*auth+sp0-S.pitch)*k; S.roll+=(IN.cx*.52*auth+sr0-S.roll)*k;
+  const VC=VEH.cur;
+  S.pitch+=(IN.cy*.46*VC.att*auth+sp0-S.pitch)*k; S.roll+=(IN.cx*.52*VC.att*auth+sr0-S.roll)*k;
   const sp=Math.hypot(S.vel.x,S.vel.z);
-  let yr=IN.ped*1.1*(.25+.75*tf);
+  let yr=IN.ped*1.1*VC.yaw*(.25+.75*tf);
   if(!S.assist) yr+=(S.coll-.5)*.4*tf;
   yr+=Math.tan(S.roll)*G/Math.max(sp,14)*.55*smooth(4,14,sp);
   S.yawRate+=(yr-S.yawRate)*(1-Math.exp(-dt*4));
@@ -1315,7 +1691,7 @@ function physics(dt){
   const up=tmpA.set(0,1,0).applyEuler(tmpE.set(S.pitch,S.yaw,S.roll,'YXZ'));
   let Tn;
   if(S.assist){
-    let vc=0; if(IN.climb>0) vc=IN.climb*5.5; else if(IN.climb<0) vc=IN.climb*clamp(.5+.3*agl,.5,5);
+    let vc=0; if(IN.climb>0) vc=IN.climb*5.5*VC.climb; else if(IN.climb<0) vc=IN.climb*clamp(.5+.3*agl,.5,5);
     Tn=(G+2.4*(vc-S.vel.y)-S.loadAcc.y)/Math.max(.7,up.y);
     if(onG&&IN.climb<.03&&loads.every(function(l){ return !l.attached||l.tension<1; })) Tn=G*.6;
   }else{
@@ -1323,12 +1699,12 @@ function physics(dt){
     Tn=G*(.18+1.64*S.coll)*(1+.16*clamp(1-agl/14,0,1));
   }
   Tn*=1+.07*smooth(0,12,sp);
-  Tn=clamp(Tn,0,G*1.65);
+  Tn=clamp(Tn,0,G*1.65*VC.pw);
   if(S.engineOut) Tn=Math.min(Tn,G*.9);
   Tn*=tf;
   S.tq=Tn/G*55; S.nz=Tn/G; if(!onG) S.maxG=Math.max(S.maxG,S.nz);
   // forces
-  const rx=S.vel.x-wind.x, ry=S.vel.y, rz=S.vel.z-wind.z, rs=Math.sqrt(rx*rx+ry*ry+rz*rz), dk=.035+.0006*rs;
+  const rx=S.vel.x-wind.x, ry=S.vel.y, rz=S.vel.z-wind.z, rs=Math.sqrt(rx*rx+ry*ry+rz*rz), dk=(.035+.0006*rs)*VC.drag;
   let ax=up.x*Tn-rx*dk, ay=up.y*Tn-G-ry*dk-S.vel.y*.25, az=up.z*Tn-rz*dk;
   if(S.assist&&!onG){
     const hf=1-smooth(.05,.35,cyc), hold=hf*1.6; ax-=S.vel.x*hold+wind.x*dk*.75*hf; az-=S.vel.z*hold+wind.z*dk*.75*hf;
@@ -1387,13 +1763,13 @@ function physics(dt){
 function syncHeli(){ heli.position.copy(S.pos); heli.rotation.set(S.pitch,S.yaw,S.roll); heli.updateMatrixWorld(true); }
 /* ===================== missions: operations & training ===================== */
 const MISSIONS=[
-  {id:'insert',grp:'ops',code:'OP-01',title:'空中機動作戦',short:'LZへ進出し、ラペルで6名を降下。帰投して着陸',diff:3,par:300,rec:{tod:7.2,wx:'clear'},
+  {id:'insert',cabin:true,grp:'ops',code:'OP-01',title:'空中機動作戦',short:'LZへ進出し、ラペルで6名を降下。帰投して着陸',diff:3,par:300,rec:{tod:7.2,wx:'clear'},
    detail:'<b>状況</b> 山間部のLZ-Aに普通科部隊を展開させる。<br><b>任務</b> LZ-Aへ進出し、対地高度32m以下・速度25kt以下でホバリング。右ドアを開けてラペル降下で6名を降ろす。完了後はホームパッドへ帰投し着陸。<br><b>操作</b> アクションボタンでドア開放→もう一度でラペル。着地して降ろすことも可能。'},
-  {id:'flood',grp:'ops',code:'OP-02',title:'災害派遣：洪水救助',short:'屋上の孤立者4名をウインチで救助し避難所へ搬送',diff:4,par:420,rec:{tod:7.2,wx:'rain'},
+  {id:'flood',cabin:true,grp:'ops',code:'OP-02',title:'災害派遣：洪水救助',short:'屋上の孤立者4名をウインチで救助し避難所へ搬送',diff:4,par:420,rec:{tod:7.2,wx:'rain'},
    detail:'<b>状況</b> 大雨で河川が氾濫し、市街地が浸水。屋上に孤立者4名。<br><b>任務</b> 浸水地区へ進出し、ホバリングしながらウインチで孤立者を1名ずつ収容。全員を避難所へ搬送して着陸。<br><b>要点</b> アクションボタンでウインチ降下。フックが孤立者に寄ると自動装着、続けて巻き上げ。建物とローターの間隔に注意。'},
-  {id:'sar',grp:'ops',code:'OP-03',title:'山岳遭難救助',short:'山頂で動けない遭難者をウインチで吊り上げ、病院へ',diff:5,par:420,rec:{tod:17.4,wx:'wind'},
+  {id:'sar',cabin:true,grp:'ops',code:'OP-03',title:'山岳遭難救助',short:'山頂で動けない遭難者をウインチで吊り上げ、病院へ',diff:5,par:420,rec:{tod:17.4,wx:'wind'},
    detail:'<b>状況</b> 登山者1名が山頂付近で負傷し動けない。強風と山岳性の乱気流あり。<br><b>任務</b> 遭難現場の上空でホバリングし、ウインチで収容。病院ヘリパッドへ搬送し着陸。<br><b>要点</b> 山肌が近いため、風上側から進入し機体を安定させる。ローターと斜面の間隔を確保すること。'},
-  {id:'medevac',grp:'ops',code:'OP-04',title:'急患空輸',short:'山村の患者を収容し、揺らさず病院へ空輸',diff:3,par:360,rec:{tod:12.5,wx:'clear'},
+  {id:'medevac',cabin:true,grp:'ops',code:'OP-04',title:'急患空輸',short:'山村の患者を収容し、揺らさず病院へ空輸',diff:3,par:360,rec:{tod:12.5,wx:'clear'},
    detail:'<b>状況</b> 山村で重症患者が発生。道路が寸断され空輸が必要。<br><b>任務</b> 山村ヘリパッドへ着陸して患者を収容。病院へ空輸して着陸。<br><b>要点</b> 患者の容体は急な操作やG、深いバンクで悪化。丁寧な操縦で搬送すること。容体が0%になると失敗。'},
   {id:'fire',grp:'ops',code:'OP-05',title:'山林火災消火',short:'バケットで海水を汲み、火点4か所へ放水',diff:4,par:600,rec:{tod:12.5,wx:'wind'},
    detail:'<b>状況</b> 山林火災が発生し延焼中。<br><b>任務</b> 吊下げ式の消火バケットで海面から取水し、火点へ運んで放水。4か所すべてを鎮火後、ホームへ帰投。<br><b>要点</b> バケットを海面に着けると取水。放水は低高度・火点の真上ほど効果大。火炎上昇流で機体が揺れます。'},
@@ -1461,13 +1837,13 @@ function hoistLabel(){
   return L.len<.5?'降ろす':'巻き上げ';
 }
 function hoistStep(dt,onBoard){
-  const L=Hoist.L; if(!L) return;
+  const L=Hoist.L; if(!L) return; const WV=VEH.cur.winch;
   if(Hoist.cmd===1){
-    L.len=Math.min(Hoist.maxLen,L.len+2.4*dt); S.winch=-1;
+    L.len=Math.min(Hoist.maxLen,L.len+2.4*WV*dt); S.winch=-1;
     if(L.grounded&&L.len>1.5){ Hoist.cmd=0; toast('フック接地',900); }
     if(L.len>=Hoist.maxLen){ Hoist.cmd=0; toast('ケーブル最長',900); }
   }else if(Hoist.cmd===2){
-    L.len=Math.max(0,L.len-1.8*dt); S.winch=1;
+    L.len=Math.max(0,L.len-1.8*WV*dt); S.winch=1;
     if(L.len<=.3){ L.len=0; Hoist.cmd=0; if(Hoist.carry){ const p=Hoist.carry; Hoist.carry=null; detach(p.mesh); p.state='aboard'; Hoist.aboard++; L.m=70; hideProg(); onBoard(p); } }
   }
   if(Hoist.carry){
@@ -1504,10 +1880,10 @@ function complete(extra,rows){
   const m=MISSION_BY_ID[O.id], t=Math.max(1,O.t);
   const tq=m.par>0?clamp(m.par/t,0,1):1, q=.55*tq+.45*clamp(extra==null?1:extra,0,1);
   const grade=q>=.9?'S':q>=.75?'A':q>=.55?'B':'C';
-  const bonus=Math.round(q*1000); S.score+=bonus;
+  const bonus=Math.round(q*1000); S.score+=bonus; const gain=Prof.award(S.score/8+({S:400,A:250,B:150,C:80}[grade]||80));
   const prev=SETTINGS.best[O.id]; let newBest=false; if(!prev||S.score>prev.score){ SETTINGS.best[O.id]={score:S.score,grade:grade}; newBest=true; saveStore(); }
   Snd.beep(1200,.25); setTimeout(function(){ Snd.beep(1600,.3); },200);
-  const out=[['所要時間',fmtTime(t)+(m.par?'  (目標 '+fmtTime(m.par)+')':'')],['スコア',S.score+(newBest?'  NEW BEST':'')],['最大G',S.maxG.toFixed(2)],['残燃料',Math.round(S.fuel)+' %']].concat(rows||[]);
+  const out=[['所要時間',fmtTime(t)+(m.par?'  (目標 '+fmtTime(m.par)+')':'')],['スコア',S.score+(newBest?'  NEW BEST':'')],['最大G',S.maxG.toFixed(2)],['残燃料',Math.round(S.fuel)+' %'],['獲得ポイント','+'+gain+' pt']].concat(rows||[]);
   radio('司令部','任務完了。見事だ。帰投せよ。');
   setTimeout(function(){ showResult(m,grade,out); },1400);
 }
@@ -1522,9 +1898,138 @@ function failMission(msg){
 const HND={};
 // ===== free flight =====
 HND.free={
-  start(){ setObj('目標なし。ホームパッド(H)に着陸すると補給できます。'); },
-  update(){},
-  actLabel(){ return 'ラペル'; }, act(){ deployTroop(); }
+  start(){
+    let pod=SETTINGS.pod||'none'; if(VEH.cur.rk&&pod==='none') pod='rocket'; O.P.pod=pod; O.P.rk=[]; O.P.ammo=VEH.cur.rk?VEH.cur.rk.n:14; O.P.cool=0; O.P.crates=[]; O.P.L=null; O.P.podMesh=null;
+    if(pod==='rocket'&&VEH.cur.rk){ setObj('ロケット弾14発。アクションボタン／Eで発射。ホームに着陸で再装填'); }
+    else if(pod==='rocket'){
+      const g=new THREE.Group(), body=stdMat(0x3c4236,.6,.3), tip=stdMat(0x9a9a8a,.4,.6);
+      [-1,1].forEach(function(sd){
+        const pylon=new THREE.Mesh(new THREE.BoxGeometry(.12,.45,1.6),body); pylon.position.set(sd*1.95,-.18,.6); g.add(pylon);
+        const tube=new THREE.Mesh(new THREE.CylinderGeometry(.36,.36,2.4,16).rotateX(Math.PI/2),body); tube.position.set(sd*1.95,-.62,.9); g.add(tube);
+        const cap=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.06,14).rotateX(Math.PI/2),tip); cap.position.set(sd*1.95,-.62,2.13); g.add(cap);
+      });
+      heli.add(g); O.P.podMesh=g; setObj('ロケットポッド装備。アクションボタン／Eで発射。ホームに着陸で再装填');
+    } else if(pod==='hook'){
+      const spots=[[HOME.x-26,HOME.z-24],[HOME.x+4,HOME.z-30],[HOME.x+34,HOME.z-22]];
+      spots.forEach(function(sp,i){
+        const g=new THREE.Group(); g.add(new THREE.Mesh(new THREE.BoxGeometry(2.2,1.5,2.2),stdMat([0x8a5a2f,0x3a6a8a,0x6a7a3a][i],.7)));
+        const strap=new THREE.Mesh(new THREE.BoxGeometry(2.26,.12,2.26),stdMat(0x222222,.8)); strap.position.y=.3; g.add(strap);
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(.28,.05,6,12),stdMat(0xdddddd,.3,.8)); ring.position.y=1.0; g.add(ring);
+        missionGroup.add(g);
+        const L=newLoad({anchor:SLING_ANCHOR,len:10,m:800,attached:false,rad:.8,cd:.004,mesh:g}); L.p.set(sp[0],groundY(sp[0],sp[1])+.8,sp[1]); L.state='ground'; L.ringOff=new THREE.Vector3(0,1.0,0); L.onPlace=function(l){ l.mesh.position.y=l.p.y; };
+        O.P.crates.push(L);
+      });
+      setMarkers(O.P.crates.map(function(c,i){ return {pos:new THREE.Vector3(c.p.x,c.p.y+3,c.p.z),label:i?'':'貨物',cls:'sub'}; }));
+      setObj('フックポッド装備。貨物の真上(高さ3〜10m)でアクションボタンを押すと吊り上げ');
+    } else if(pod==='bucket'){
+      const b=new THREE.Group();
+      b.add(new THREE.Mesh(new THREE.CylinderGeometry(1.2,.85,1.5,14,1,true),new THREE.MeshStandardMaterial({color:0xe07a1a,roughness:.6,side:THREE.DoubleSide})));
+      const wt=new THREE.Mesh(new THREE.CylinderGeometry(1.1,.9,.1,14),new THREE.MeshStandardMaterial({color:0x4aa0d0,roughness:.1})); b.add(wt);
+      const rim=new THREE.Mesh(new THREE.TorusGeometry(1.2,.05,6,16).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({color:0x333333})); rim.position.y=.75; b.add(rim);
+      missionGroup.add(b);
+      const L=newLoad({anchor:SLING_ANCHOR,len:12,m:140,rad:.8,cd:.006,mesh:b}); L.water=0; L.wt=wt; L.dropping=false;
+      L.p.set(HOME.x,groundY(HOME.x,HOME.z-8)+.8,HOME.z-8); O.P.L=L;
+      setObj('バケツ装備。海面で取水し、アクションボタンで放水');
+    } else if(pod==='rope'){
+      O.P.spots=[[-120,-70],[150,-110],[60,150],[-170,90]].map(function(o){ return [HOME.x+o[0],HOME.z+o[1]]; });
+      O.P.surv=O.P.spots.map(function(sp,i){ return makeSurvivor(sp[0],groundY(sp[0],sp[1]),sp[1],[0xff7a1a,0xffcc22,0xff5a3a,0x4ab0ff][i]); });
+      O.P.saved=0; hoistInit(O.P.surv); HND.free.mark();
+      setObj('救助ロープ装備。アクションボタンでウインチ降下→孤立者の真上でホバリングして収容→ホームへ搬送');
+    } else setObj('目標なし。ホームパッド(H)に着陸すると補給できます。設定で追加ポッドを選べます');
+  },
+  mark(){ const l=O.P.surv.filter(function(s){ return s.state==='wait'; }); setMarkers(l.map(function(s){ return {pos:s.pos,label:'孤立者',cls:'sub'}; })); },
+  reload(){ this.end(); this.cleanMesh(); this.start(); },
+  cleanMesh(){ while(missionGroup.children.length) missionGroup.remove(missionGroup.children[0]); setMarkers([]); },
+  canHook(c){
+    heli.localToWorld(_anch.copy(SLING_ANCHOR)); const gap=_anch.y-(c.p.y+1.0);
+    return Math.hypot(_anch.x-c.p.x,_anch.z-c.p.z)<3.6&&gap>2.5&&gap<10.5&&Math.hypot(S.vel.x,S.vel.z)*KT<6;
+  },
+  fireRocket(){
+    if(O.P.ammo<=0||O.P.cool>0||S.crashed) return false;
+    const side=(O.P.ammo%2)?1:-1; O.P.ammo--; O.P.cool=.22; const rp=VEH.cur.rk?VEH.cur.rk.pos:[1.95,-.62,1.9];
+    heli.localToWorld(tmpA.set(side*rp[0],rp[1],rp[2]+.5)); heli.localToWorld(tmpB.set(side*rp[0],rp[1]+2.2,rp[2]+100.5));
+    const d=tmpB.sub(tmpA).normalize();
+    const m=new THREE.Mesh(this._rg||(this._rg=new THREE.CylinderGeometry(.07,.07,1.1,6).rotateX(Math.PI/2)),this._rm||(this._rm=new THREE.MeshBasicMaterial({color:0xdddddd,fog:false})));
+    m.position.copy(tmpA); m.lookAt(tmpA.clone().add(d)); scene.add(m);
+    O.P.rk.push({m:m,v:d.clone().multiplyScalar(90).add(S.vel),dir:d.clone(),t:0});
+    spawnFx({pos:tmpA.clone(),vel:S.vel.clone(),s0:2,s1:7,life:.5,color:0xffffff,op:.7});
+    Snd.shot(); toast('',1); return true;
+  },
+  boom(p){
+    for(let i=0;i<10;i++) spawnFx({pos:new THREE.Vector3(p.x+rnd(-2,2),p.y+rnd(0,2),p.z+rnd(-2,2)),vel:new THREE.Vector3(rnd(-6,6),rnd(2,9),rnd(-6,6)),s0:3,s1:12,life:.9,color:0xff9a3a,op:.9,add:true});
+    for(let i=0;i<6;i++) spawnFx({pos:p.clone(),vel:new THREE.Vector3(rnd(-3,3),rnd(4,10),rnd(-3,3)),s0:4,s1:22,life:4,color:0x333333,op:.6,drag:.25});
+    for(let k=0;k<targets.length;k++){ const tg=targets[k]; if(tg.alive&&tg.c.distanceTo(p)<10) Ops.targetHit(tg); }
+    Snd.boom&&Snd.boom();
+  },
+  update(dt){
+    const pod=O.P.pod;
+    if(pod==='rocket'){
+      O.P.cool=Math.max(0,O.P.cool-dt);
+      for(let i=O.P.rk.length-1;i>=0;i--){ const r=O.P.rk[i]; r.t+=dt;
+        r.v.addScaledVector(r.dir,260*dt*(r.t<1.4?1:0)); r.v.y-=G*.35*dt;
+        const prev=tmpC.copy(r.m.position); r.m.position.addScaledVector(r.v,dt); r.m.lookAt(tmpD.copy(r.m.position).add(r.v));
+        spawnFx({pos:r.m.position.clone(),vel:new THREE.Vector3(wind.x*.3,0,wind.z*.3),s0:1.2,s1:4.5,life:1.6,color:0xe8e8e8,op:.55,drag:.3});
+        let hit=false; for(let k=0;k<targets.length&&!hit;k++){ const tg=targets[k]; if(tg.alive&&segDist2(prev,r.m.position,tg.c)<tg.r*tg.r+4) hit=true; }
+        const p=r.m.position, gy=groundY(p.x,p.z);
+        if(hit||p.y<gy+.2||r.t>9){ this.boom(new THREE.Vector3(p.x,Math.max(p.y,gy),p.z)); scene.remove(r.m); O.P.rk.splice(i,1); }
+      }
+      if(landedAt(HOME.x,HOME.z,24,3)&&O.P.ammo<(VEH.cur.rk?VEH.cur.rk.n:14)){ O.P.ammo=VEH.cur.rk?VEH.cur.rk.n:14; toast('ロケット再装填',1500); }
+    } else if(pod==='hook'){
+      O.P.crates.forEach(function(c){
+        if(c.state==='slung') c.mesh.rotation.y=S.yaw;
+        else if(c.state==='dropped'){
+          c.attached=false; c.dropT=(c.dropT||0)+dt;
+          if(c.impact>3){ c.impact=0; toast('貨物に衝撃',1200); }
+          if(c.grounded&&c.v.length()<.4&&c.dropT>1.5){ c.state='ground'; }
+        }
+      });
+    } else if(pod==='rope'){
+      survivorsAnim(O.P.surv,S.time);
+      hoistStep(dt,function(p){ S.score+=150; radio('クルー','収容完了。機内 '+Hoist.aboard+'名。'); HND.free.mark(); });
+      if(Hoist.aboard>0&&landedAt(HOME.x,HOME.z,24,3)){ O.P.saved+=Hoist.aboard; S.score+=100*Hoist.aboard; toast('救助者 '+Hoist.aboard+'名を引き渡し',2200); radio('司令部','救助者を受け取った。'); Hoist.aboard=0;
+        O.P.surv.forEach(function(s,i){ if(s.state!=='wait'){ detach(s.mesh); const sp=O.P.spots[i]; const n=makeSurvivor(sp[0],groundY(sp[0],sp[1]),sp[1],[0xff7a1a,0xffcc22,0xff5a3a,0x4ab0ff][i]); O.P.surv[i]=n; } });
+        Hoist.list=O.P.surv; HND.free.mark(); }
+    } else if(pod==='bucket'){
+      const L=O.P.L; if(!L) return;
+      if((L.grounded||L.p.y<3)&&terrainH(L.p.x,L.p.z)<-1&&L.water<1500){ L.water=Math.min(1500,L.water+520*dt); if(Math.random()<.4) spawnFx({pos:new THREE.Vector3(L.p.x,.6,L.p.z),vel:new THREE.Vector3(rnd(-1,1),rnd(1,3),rnd(-1,1)),s0:1,s1:4,life:.8,color:0xe8f4ff,op:.5}); }
+      if(L.dropping){ const dw=Math.min(L.water,300*dt); L.water-=dw;
+        for(let i=0;i<4;i++) spawnFx({pos:new THREE.Vector3(L.p.x+rnd(-.8,.8),L.p.y-.4,L.p.z+rnd(-.8,.8)),vel:new THREE.Vector3(wind.x*.3+rnd(-1,1),rnd(-4,-1),wind.z*.3+rnd(-1,1)),s0:1.4,s1:3.2,life:1.6,color:0xcfe8f5,op:.55,g:5,drag:.2});
+        if(L.water<=0){ L.dropping=false; L.water=0; } }
+      L.m=140+L.water; L.wt.position.y=-.7+.9*(L.water/1500); L.wt.visible=L.water>10;
+    }
+  },
+  panel(){
+    const pod=O.P.pod;
+    if(pod==='rocket') return [['ロケット',O.P.ammo+' / '+(VEH.cur.rk?VEH.cur.rk.n:14),O.P.ammo<4?'warn':'']];
+    if(pod==='rope') return [['収容',Hoist.aboard+'名',''],['救助済',O.P.saved+'名',''],['ケーブル',Hoist.L?Hoist.L.len.toFixed(0)+' m':'--','']];
+    if(pod==='bucket'&&O.P.L) return [['水',Math.round(O.P.L.water/15)+' %','']];
+    if(pod==='hook'){ const s=O.P.crates.find(function(c){ return c.state==='slung'; }); if(s) return [['荷重',Math.round(s.m)+' kg',''],['振れ',s.swing.toFixed(1)+' m',s.swing>3?'warn':'']]; const n=O.P.crates.find(function(c){ return c.state==='ground'&&HND.free.canHook(c); }); return [['吊下',n?'OK':'--','']]; }
+    return [];
+  },
+  actLabel(){
+    const pod=O.P.pod;
+    if(pod==='rocket') return 'ロケット';
+    if(pod==='hook') return O.P.crates.some(function(c){ return c.state==='slung'; })?'離す':'フック';
+    if(pod==='bucket') return O.P.L&&O.P.L.dropping?'停止':'放水';
+    if(pod==='rope') return hoistLabel();
+    return 'ラペル';
+  },
+  actOn(){ const pod=O.P.pod; if(pod==='rocket') return O.P.ammo>0; if(pod==='bucket') return !!O.P.L&&(O.P.L.dropping||O.P.L.water>50); return true; },
+  act(){
+    const pod=O.P.pod;
+    if(pod==='rocket'){ if(!this.fireRocket()&&O.P.ammo<=0) toast('弾切れ。ホームに着陸して再装填',2000); }
+    else if(pod==='hook'){
+      const s=O.P.crates.find(function(c){ return c.state==='slung'; });
+      if(s){ s.attached=false; s.state='dropped'; s.dropT=0; s.impact=0; radio('クルー','荷を離しました。'); return; }
+      const c=O.P.crates.find(function(c){ return c.state==='ground'&&HND.free.canHook(c); });
+      if(c){ c.attached=true; c.state='slung'; c.len=10; c.tension=0; radio('クルー','フック掛け完了。'); Snd.beep(1300,.12); }
+      else toast('貨物の真上、高さ3〜10m、速度6kt以下で',2200);
+    }
+    else if(pod==='bucket'){ const L=O.P.L; if(!L) return; if(L.dropping) L.dropping=false; else if(L.water>50){ L.dropping=true; radio('クルー','放水開始。'); } else toast('バケツが空です。海面で取水してください'); }
+    else if(pod==='rope') hoistAct();
+    else deployTroop();
+  },
+  end(){ if(O.P.pod==='rope') hoistDone(); if(O.P.podMesh){ heli.remove(O.P.podMesh); O.P.podMesh=null; } (O.P.rk||[]).forEach(function(r){ scene.remove(r.m); }); O.P.rk=[]; clearLoads(); }
 };
 // ===== low-level navigation =====
 HND.nav={
@@ -1582,7 +2087,7 @@ HND.insert={
   },
   update(){
     const dA=Math.hypot(S.pos.x-SITE.A.x,S.pos.z-SITE.A.z), gy=groundY(S.pos.x,S.pos.z), agl=S.pos.y-gy;
-    const landed=troopsA.filter(function(t){ return t.mode!=='rope'&&Math.hypot(t.g.position.x-SITE.A.x,t.g.position.z-SITE.A.z)<100; }).length;
+    const landed=troopsA.filter(function(t){ return (t.mode==='land'||t.mode==='run'||t.mode==='hold')&&Math.hypot(t.g.position.x-SITE.A.x,t.g.position.z-SITE.A.z)<100; }).length;
     if(O.stage===0){ setObj('LZ-Aへ進出。対地高度32m以下でホバリング'); if(dA<80&&agl<35){ O.stage=1; toast('LZ到達。アクションボタンでドア開放→ラペル降下',3500); radio('クルー','LZ上空。ドア開放、降下用意。'); } }
     else if(O.stage===1){ setObj('ラペル降下 '+landed+' / 6'); if(landed>=6){ O.stage=2; S.score+=300; setMarkers([{pos:new THREE.Vector3(HOME.x,AF+4,HOME.z),label:'HOME',main:true}]); setBeam(new THREE.Vector3(HOME.x,AF,HOME.z)); smokers.length=0; toast('降下完了。ホームへ帰投して着陸',3500); radio('司令部','展開完了を確認。帰投せよ。'); } }
     else { setObj('ホームパッドへ帰投して着陸'); if(landedAt(HOME.x,HOME.z,14,2)) complete(1,[['降下人員','6名']]); }
@@ -1815,14 +2320,16 @@ const Ops={
   },
   start(i){
     this.cleanup();
-    const m=MISSIONS[i]; O.idx=i; O.id=m.id; O.t=0; O.stage=0; O.done=false; O.P={}; O.extra=1;
+    const m=MISSIONS[i]; let vid=Prof.d.veh||'uh60ja'; if(!VEH[vid]||!Prof.owns(vid)) vid='uh60ja';
+    let forced=false; if(m.cabin&&!VEH[vid].cabin){ vid='uh60ja'; forced=true; }
+    setVehicle(vid); O.idx=i; O.id=m.id; O.t=0; O.stage=0; O.done=false; O.P={}; O.extra=1;
     S.score=0; resetHeli();
     $('crash').querySelector('h3').textContent='CRASHED';
     $('m-tag').textContent=m.code; $('m-title').textContent=m.title; $('m-obj').textContent=m.short; $('m-sub').textContent='';
     HND[O.id].start();
     S.started=true; S.paused=false;
     ['crash','pause','intro','result','settings','mapov'].forEach(function(id){ $(id).hidden=true; }); $('app').classList.remove('brief');
-    toast('エンジン始動中。回転が上がるまで待機',3200);
+    toast(forced?'この任務はキャビン付き機体が必要なためUH-60JAで出撃':'エンジン始動中。回転が上がるまで待機',3200);
   },
   update(dt){
     if(O.done||S.crashed||!S.started) return;
@@ -1835,8 +2342,10 @@ const Ops={
   actLabel(){ return HND[O.id].actLabel(); },
   actOn(){ const h=HND[O.id]; return h.actOn?h.actOn():true; },
   panel(){ const h=HND[O.id]; return h.panel?h.panel():[]; },
-  targetHit(tg){
-    if(tg.hp>1){ tg.hp--; tg.alert=true; tg.hit=true; if(tg.react>.4) tg.react=.4; spawnFx({pos:tg.c.clone(),vel:new THREE.Vector3(rnd(-2,2),rnd(1,3),rnd(-2,2)),s0:.7,s1:2,life:.25,color:0xffd070,op:1,add:true}); return; }
+  targetHit(tg,pw){
+    pw=pw||1;
+    if(tg.remote){ if(window.Net) Net.hitRemote(tg,pw); return; }
+    if(tg.hp>pw){ tg.hp-=pw; tg.alert=true; tg.hit=true; if(tg.react>.4) tg.react=.4; spawnFx({pos:tg.c.clone(),vel:new THREE.Vector3(rnd(-2,2),rnd(1,3),rnd(-2,2)),s0:.7,s1:2,life:.25,color:0xffd070,op:1,add:true}); return; }
     tg.alive=false; S.score+=tg.pts||100; S.hits++;
     spawnFx({pos:tg.c.clone(),vel:new THREE.Vector3(0,2,0),s0:2,s1:7,life:.5,color:0xffd070,op:1,add:true});
     if(tg.kind&&typeof Foes!=='undefined') Foes.kill(tg);
@@ -1948,8 +2457,9 @@ const Foes={
     if(f.lamp) f.lamp.visible=false;
     const h=HND[O.id]; if(h&&h.onKill) h.onKill(f);
   },
-  hurt(d){
-    if(S.crashed||O.done) return;
+  hurt(d,owner){
+    if(!(d>0)||S.crashed||O.done||S.inv>0) return;
+    d*=VEH.cur.armor; if(owner) S.lastAtk=owner;
     S.hull-=d; S.underFire=2.5; camShake=Math.max(camShake,.1);
     const ov=$('hitov'); ov.classList.add('on'); setTimeout(function(){ ov.classList.remove('on'); },90);
     Snd.beep(300,.05);
@@ -1992,7 +2502,7 @@ const Foes={
     for(let i=0;i<this.shots.length;i++){
       const t=this.shots[i]; if(!t.on) continue;
       const prev=tmpA.copy(t.mesh.position); t.mesh.position.addScaledVector(t.vel,dt); t.life-=dt; let hit=false;
-      if(!S.crashed&&!O.done){ tmpB.set(S.pos.x,S.pos.y+1.2,S.pos.z); if(segDist2(prev,t.mesh.position,tmpB)<3.1*3.1){ hit=true; this.hurt(t.dmg); } }
+      if(!S.crashed&&!O.done){ tmpB.set(S.pos.x,S.pos.y+1.2,S.pos.z); if(segDist2(prev,t.mesh.position,tmpB)<3.1*3.1){ hit=true; this.hurt(t.dmg,t.owner); } }
       if(!hit&&conv) for(let k=0;k<conv.v.length&&!hit;k++){ const v=conv.v[k]; if(v.alive&&segDist2(prev,t.mesh.position,v.c)<3.3*3.3){ hit=true; Foes.hitConvoy(v,t.cdmg); } }
       const p=t.mesh.position; if(!hit&&p.y<groundY(p.x,p.z)){ hit=true; spawnFx({pos:new THREE.Vector3(p.x,groundY(p.x,p.z)+.3,p.z),vel:new THREE.Vector3(0,2,0),s0:.8,s1:3,life:.5,color:0xa89c78,op:.5}); }
       if(hit||t.life<=0){ t.on=false; t.mesh.visible=false; }
@@ -2196,6 +2706,19 @@ HND.raid={
   const at=MISSIONS.findIndex(function(m){ return m.grp==='train'; });
   MISSIONS.splice.apply(MISSIONS,[at,0].concat(add)); add.forEach(function(m){ MISSION_BY_ID[m.id]=m; });
 }
+/* ===================== online modes: registered as missions, logic lives in 70_net.js ===================== */
+MISSIONS.push(
+  {id:'duel',grp:'online',code:'ON-01',title:'タイマン（1対1）',short:'オンライン対戦。先に3回撃墜した方が勝ち。レーティング変動あり',diff:5,par:0,rec:{tod:12.5,wx:'clear'},
+   detail:'<b>ルール</b> 1対1の空中戦。先に相手を3回撃墜した方が勝利（制限時間6分、同数なら延長）。<br><b>マッチ</b> クイックマッチ、フレンド招待、ルームコードで対戦できます。<br><b>報酬</b> 勝敗でレーティングとポイントが増減。ポイントで新機体をアンロック。<br><b>注意</b> 機体は「ガレージ」で選択。昼・晴れ固定。'},
+  {id:'duelcpu',grp:'online',code:'ON-02',title:'タイマン練習（CPU）',short:'CPU機と1対1。通信なしで空戦の練習',diff:3,par:0,rec:{tod:12.5,wx:'clear'},
+   detail:'<b>ルール</b> CPU機と1対1。先に3回撃墜した方が勝ち。<br><b>要点</b> 機体ごとに武装と機動が異なります。ドアガンは機首方向固定、AH-64Dはロケット弾も使えます。'},
+  {id:'sky',grp:'online',code:'ON-03',title:'オンライン・フリーフライト',short:'同じ空を他のプレイヤーと飛ぶ。チャット・合流・編隊飛行',diff:1,par:0,rec:{tod:12.5,wx:'clear'},
+   detail:'<b>内容</b> 同じ空域にいる他のプレイヤーが機体・名前つきで見えます。フレンドの位置へ合流、クイック無線で連携。<br><b>追加ポッド</b> 設定で選んだポッドも使用可。他のプレイヤーへの攻撃判定はありません。'}
+);
+MISSIONS.forEach(function(m){ MISSION_BY_ID[m.id]=m; });
+HND.duel={ start(){ Duel.start(false); }, update(dt){ Duel.update(dt); }, act(){ Duel.act(); }, actLabel(){ return Duel.actLabel(); }, actOn(){ return Duel.actOn(); }, panel(){ return Duel.panel(); }, end(){ Duel.end(); } };
+HND.duelcpu={ start(){ Duel.start(true); }, update(dt){ Duel.update(dt); }, act(){ Duel.act(); }, actLabel(){ return Duel.actLabel(); }, actOn(){ return Duel.actOn(); }, panel(){ return Duel.panel(); }, end(){ Duel.end(); } };
+HND.sky={ start(){ Sky.start(); }, update(dt){ Sky.update(dt); }, act(){ Sky.act(); }, actLabel(){ return Sky.actLabel(); }, actOn(){ return true; }, panel(){ return Sky.panel(); }, end(){ Sky.end(); } };
 /* ===================== UI helpers ===================== */
 let toastT=0;
 function toast(msg,ms){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){ el.classList.remove('show'); },ms||2600); }
@@ -2288,7 +2811,7 @@ function syncButtons(){
   $('b-light').classList.toggle('on',S.light>0); $('b-light').textContent=['灯火','着陸灯','サーチ'][S.light]; $('b-nvg').classList.toggle('on',S.nvg);
   $('b-snd').classList.toggle('on',Snd.on);
 }
-function setPause(v){ if(!S.started||(S.crashed&&!v)) return; S.paused=v; $('pause').hidden=!v; }
+function setPause(v){ if(!S.started||(S.crashed&&!v&&!Net.live())) return; if(Net.live()){ $('pause').hidden=!v; return; } S.paused=v; $('pause').hidden=!v; }
 function openMap(v){ $('mapov').hidden=!v; }
 function setBrief(on){ $('app').classList.toggle('brief',on); }
 function toBrief(){ ['pause','crash','result','settings','mapov'].forEach(function(id){ $(id).hidden=true; }); Ops.idle(); $('intro').hidden=false; setBrief(true); }
@@ -2354,7 +2877,7 @@ function updateCamera(dt){
   if(S.cam!==3){ look.idle+=dt; if(look.idle>1.6){ look.az=((look.az+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI; const k=Math.exp(-dt*3.2); look.az*=k; look.el*=k; } }
   if(S.crashed&&(S.cam===1||S.cam===2||S.cam===4)) S.cam=3;
   if(S.cam===1||S.cam===2){
-    const lp=S.cam===1?tmpA.set(-.5,2.55,3.0):tmpA.set(-1.45,2.25,.9);
+    const ck=VEH.cur.cock, lp=S.cam===1?tmpA.set(ck[0],ck[1],ck[2]):tmpA.set(VEH.cur.cabin?-1.45:-1.0,VEH.cur.cabin?2.25:2.3,.9);
     camera.position.copy(heli.localToWorld(lp.clone()));
     camera.quaternion.copy(heli.quaternion).multiply(qFlip);
     if(S.cam===2){ qTmp.setFromAxisAngle(new THREE.Vector3(0,1,0),-.45); camera.quaternion.multiply(qTmp); }
@@ -2593,7 +3116,7 @@ addEventListener('resize',resize);
 (function buildBriefing(){
   const box=$('opt-mission'); let lastGrp='';
   MISSIONS.forEach(function(m,i){
-    if(m.grp!==lastGrp){ lastGrp=m.grp; const h=document.createElement('h2'); h.className='grp'; h.textContent=m.grp==='ops'?'作戦  OPERATIONS':m.grp==='combat'?'戦闘作戦  COMBAT':'訓練  TRAINING'; box.appendChild(h); }
+    if(m.grp!==lastGrp){ lastGrp=m.grp; const h=document.createElement('h2'); h.className='grp'; h.textContent=m.grp==='ops'?'作戦  OPERATIONS':m.grp==='combat'?'戦闘作戦  COMBAT':m.grp==='online'?'オンライン  ONLINE':'訓練  TRAINING'; box.appendChild(h); }
     const d=document.createElement('div'); d.className='opt';
     const best=SETTINGS.best[m.id];
     d.innerHTML='<input type="radio" name="mission" id="m'+i+'" value="'+i+'"'+(m.id==='flood'?' checked':'')+'><label for="m'+i+'"><span class="st">'+'★'.repeat(m.diff)+(best?'  '+best.grade:'')+'</span><span class="code">'+m.code+'</span><b>'+m.title+'</b><small>'+m.short+'</small></label>';
@@ -2608,6 +3131,7 @@ addEventListener('resize',resize);
 })();
 $('start-simulation').addEventListener('click',function(){
   const mi=+document.querySelector('input[name=mission]:checked').value;
+  if(MISSIONS[mi].id==='duel'){ OnlineUI.open('duel'); return; }
   S.tod=parseFloat(document.querySelector('input[name=tod]:checked').value);
   S.weather=document.querySelector('input[name=wx]:checked').value;
   S.assist=$('opt-assist').checked; S.cam=0; S.nvg=false; orbit.dist=30; orbit.el=.3; look.az=look.el=0; look.zoom=1;
@@ -2620,19 +3144,568 @@ function applySettings(){
   document.documentElement.style.setProperty('--hud',String(SETTINGS.hud)); document.body.classList.toggle('swap',!!+SETTINGS.swap);
   $('s-sens').value=SETTINGS.sens; $('s-vol').value=SETTINGS.vol; Snd.setOn(Snd.on);
   const mark=function(id,val){ $(id).querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',String(b.dataset.v)===String(val)); }); };
-  mark('s-q',SETTINGS.quality); mark('s-hud',SETTINGS.hud); mark('s-swap',+SETTINGS.swap); mark('s-voice',+SETTINGS.voice);
+  mark('s-q',SETTINGS.quality); mark('s-hud',SETTINGS.hud); mark('s-swap',+SETTINGS.swap); mark('s-voice',+SETTINGS.voice); mark('s-pod',SETTINGS.pod);
 }
 (function bindSettings(){
   const seg=function(id,key,num){ $(id).addEventListener('click',function(e){ const b=e.target.closest('button'); if(!b) return; SETTINGS[key]=num?+b.dataset.v:b.dataset.v; saveStore(); applySettings(); }); };
-  seg('s-q','quality',false); seg('s-hud','hud',true); seg('s-swap','swap',true); seg('s-voice','voice',true);
+  seg('s-q','quality',false);
+  $('s-pod').addEventListener('click',function(e){ const b=e.target.closest('button'); if(!b) return; SETTINGS.pod=b.dataset.v; saveStore(); applySettings(); if(O.id==='free'&&S.started&&!O.done&&HND.free.reload) HND.free.reload(); }); seg('s-hud','hud',true); seg('s-swap','swap',true); seg('s-voice','voice',true);
   $('s-sens').addEventListener('input',function(){ SETTINGS.sens=+this.value; saveStore(); });
   $('s-vol').addEventListener('input',function(){ SETTINGS.vol=+this.value; saveStore(); Snd.setOn(Snd.on); });
   const open=function(){ $('settings').hidden=false; }, close=function(){ $('settings').hidden=true; };
   $('b-set').onclick=open; $('i-set').onclick=open; $('p-set').onclick=open; $('s-close').onclick=close;
 })();
+/* ===================== ONLINE: identity, profile sync, friends, lobby, realtime ===================== */
+const Net={
+  state:'offline', note:'', uid:null, me:null, user:null, db:null, room:null, canWrite:true,
+  names:{}, avatars:{}, players:new Map(), lobby:[], chat:[], rtt:{}, st:'menu', qSince:0, match:null, inv:null,
+  ls:[], profReady:false, lastKey:'', pushing:false, lastSay:0, joinTarget:null,
+  on(fn){ this.ls.push(fn); }, ui(w){ this.ls.forEach(function(f){ try{ f(w); }catch(e){} }); },
+  live(){ return (typeof Duel!=='undefined'&&Duel.active&&!Duel.cpu&&!Duel.over)||(typeof Sky!=='undefined'&&Sky.active&&Net.state==='online'); },
+  nm(id){ return this.names[id]||'プレイヤー'; },
+  pid(p){ return p.by||(p.presence&&p.presence.u)||null; },
+  async resolve(ids){
+    if(!this.user) return; const need=[]; ids.forEach(function(i){ if(i&&!Net.names[i]&&need.indexOf(i)<0) need.push(i); }); if(!need.length) return;
+    try{ const ps=await this.user.profiles(need); need.forEach(function(i){ const p=ps[i]; Net.names[i]=(p&&p.name)||'プレイヤー'; Net.avatars[i]=p&&p.avatarUrl; }); }catch(e){}
+    this.ui('names');
+  },
+  async init(){
+    const C=window.claude;
+    if(!C||typeof C.use!=='function'){ this.state='offline'; this.note='このページはオンライン機能のある環境（claude.aiの共有ページ）で開くと対戦・フレンド・ランキングが使えます。'; this.ui('state'); return; }
+    this.state='connecting'; this.ui('state');
+    try{ this.user=await C.use('user'); }catch(e){}
+    try{ this.db=await C.use('db'); }catch(e){}
+    try{ this.room=await C.use('room'); }catch(e){}
+    if(this.user){ try{ this.me=await this.user.me(); this.uid=this.me.id; }catch(e){} }
+    if(!this.uid){ this.state='offline'; this.note='アカウント情報を取得できませんでした。claude.aiにサインインした状態で共有リンクから開いてください。'; this.ui('state'); return; }
+    this.names[this.uid]=this.me.name||'あなた'; this.avatars[this.uid]=this.me.avatarUrl;
+    try{ const w=await this.user.can('data.write'); this.canWrite=(w!==false); }catch(e){}
+    this.state='online'; this.note=this.canWrite?'':'閲覧権限のため、ポイント・フレンドは保存されません（編集者・共同作業者として共有してもらってください）。';
+    if(this.db) this.startDb(); if(this.room) this.startLobby();
+    this.ui('state');
+  },
+  /* ---------- database: profile, friends, ranking ---------- */
+  startDb(){
+    const db=this.db;
+    try{ db.collection('players').onSnapshot(function(snap){ const m=new Map(); snap.docs.forEach(function(d){ m.set(d.id,d.data()||{}); }); Net.players=m; Net.resolve(Array.from(m.keys())); Net.ui('players'); },function(){}); }catch(e){}
+    db.doc('players/'+this.uid).get().then(function(s){ if(s.exists) Net.mergeRemote(s.data()); Net.profReady=true; Net.push(true); }).catch(function(){ Net.profReady=true; });
+    Prof.on(function(){ Net.schedulePush(); });
+  },
+  mergeRemote(r){
+    const d=Prof.d; (r.unlocked||[]).forEach(function(u){ if(d.unlocked.indexOf(u)<0&&VEH[u]) d.unlocked.push(u); });
+    if((r.tot||0)>=d.tot){ ['pts','tot','rating','w','l','k','dth'].forEach(function(k){ if(typeof r[k]==='number') d[k]=r[k]; }); if(Array.isArray(r.hist)) d.hist=r.hist; if(Array.isArray(r.friends)) d.friends=r.friends; if(Array.isArray(r.ign)) d.ign=r.ign; }
+    else { (r.friends||[]).forEach(function(f){ if(d.friends.indexOf(f)<0) d.friends.push(f); }); }
+    if(!Prof.owns(d.veh)) d.veh='uh60ja';
+    Prof.save();
+  },
+  schedulePush(){ if(!this.db||!this.uid||!this.canWrite||!this.profReady) return; clearTimeout(this.pt); this.pt=setTimeout(function(){ Net.push(); },1500); },
+  async push(force){
+    if(!this.db||!this.uid||!this.canWrite) return; if(this.pushing){ this.schedulePush(); return; }
+    const d=Prof.d, body={v:1,pts:d.pts,tot:d.tot,rating:d.rating,w:d.w,l:d.l,k:d.k,dth:d.dth,unlocked:d.unlocked,veh:d.veh,friends:d.friends,ign:d.ign,hist:d.hist.slice(-12),ms:0};
+    const key=JSON.stringify(body); if(!force&&key===this.lastKey) return;
+    this.pushing=true; body.ms=Date.now();
+    try{ await this.db.doc('players/'+this.uid).set(body); this.lastKey=key; }catch(e){ if(e&&e.code==='invalid_argument'){ this.canWrite=false; this.note='書き込み権限がないため、進行状況はこの端末にのみ保存されます。'; this.ui('state'); } }
+    this.pushing=false;
+  },
+  /* ---------- friends: a friendship exists when both players list each other ---------- */
+  friendsOf(){
+    const me=this.uid, mine=Prof.d.friends, out={friends:[],outgoing:[],incoming:[]};
+    mine.forEach(function(id){ const p=Net.players.get(id); if(p&&(p.friends||[]).indexOf(me)>=0) out.friends.push(id); else out.outgoing.push(id); });
+    Net.players.forEach(function(p,id){ if(id!==me&&(p.friends||[]).indexOf(me)>=0&&mine.indexOf(id)<0&&Prof.d.ign.indexOf(id)<0) out.incoming.push(id); });
+    return out;
+  },
+  addFriend(id){ if(!id||id===this.uid) return; const d=Prof.d; if(d.friends.indexOf(id)<0) d.friends.push(id); d.ign=d.ign.filter(function(x){ return x!==id; }); Prof.save(); Net.resolve([id]); this.ui('friends'); },
+  removeFriend(id){ const d=Prof.d; d.friends=d.friends.filter(function(x){ return x!==id; }); if(d.ign.indexOf(id)<0) d.ign.push(id); Prof.save(); this.ui('friends'); },
+  online(id){ for(let i=0;i<this.lobby.length;i++){ const p=this.lobby[i]; if(!p.isMe&&this.pid(p)===id) return p; } return null; },
+  /* ---------- lobby room: presence, chat, invites, matchmaking, ping ---------- */
+  startLobby(){
+    const R=this.room;
+    R.onPeers(function(ch){ Net.lobby=ch.peers.filter(function(p){ return p.kind==='viewer'; }); Net.resolve(Net.lobby.map(function(p){ return Net.pid(p); })); Net.mmCheck(); if(typeof Sky!=='undefined') Sky.sync(); Net.ui('lobby'); },function(){});
+    R.on('chat',function(m){ Net.onChat(m); }); R.on('inv',function(m){ Net.onInv(m); }); R.on('invr',function(m){ Net.onInvr(m); }); R.on('mm',function(m){ Net.onMM(m); });
+    R.on('ping',function(m){ if(m.isMe) return; R.emit('pong',{to:m.peer,t:m.data&&m.data.t}).catch(function(){}); });
+    R.on('pong',function(m){ const d=m.data, me=Net.myPeer(R); if(!d||d.to!==me||m.isMe) return; Net.rtt[m.peer]=Math.max(1,Date.now()-d.t); });
+    this.setPresence({}); setInterval(function(){ if(R.connected()) R.emit('ping',{t:Date.now()}).catch(function(){}); },3000);
+  },
+  myPeer(R){ const l=(R||this.room).peers(); for(let i=0;i<l.length;i++) if(l[i].sameTab) return l[i].peer; return null; },
+  setPresence(extra){ if(!this.room) return; this.room.presence(Object.assign({u:this.uid,st:this.st,veh:Prof.d.veh,rt:Prof.d.rating,q:this.qSince||null},extra||{})).catch(function(){}); },
+  setSt(st,extra){ this.st=st; this.setPresence(extra); },
+  say(text,toMatch){
+    text=String(text||'').trim().slice(0,140); if(!text||!this.room) return false; const n=Date.now(); if(n-this.lastSay<700) return false; this.lastSay=n;
+    const R=(toMatch&&Duel.room)?Duel.room:this.room; R.emit('chat',{m:text}).catch(function(){}); return true;
+  },
+  onChat(m){
+    const d=m.data; if(!d||typeof d.m!=='string') return; const by=m.by||(m.isMe?this.uid:null); const rec={by:by,peer:m.peer,text:d.m.slice(0,140),ts:Date.now(),me:m.isMe};
+    this.chat.push(rec); if(this.chat.length>60) this.chat.shift(); this.resolve([by]);
+    if(S.started&&!m.isMe&&$('intro').hidden) radio(this.nm(by),rec.text);
+    this.ui('chat');
+  },
+  queue(on){ if(!this.room||this.match) return; this.qSince=on?Date.now():0; this.setSt(on?'queue':'menu'); this.ui('queue'); },
+  mmCheck(){
+    if(!this.qSince||this.match||!this.room) return;
+    const q=this.lobby.filter(function(p){ return p.presence&&p.presence.q>0&&Net.pid(p); }).sort(function(a,b){ return a.presence.q-b.presence.q||(a.peer<b.peer?-1:1); });
+    if(q.length>=2&&q[0].isMe){ const o=q[1], code=randCode(); this.room.emit('mm',{a:this.uid,b:this.pid(o),code:code}).catch(function(){}); this.beginDuel(code,this.pid(o),true); }
+  },
+  onMM(m){ const d=m.data; if(!d||m.isMe||d.b!==this.uid||!this.qSince||this.match||typeof d.code!=='string') return; this.beginDuel(d.code,d.a,false); },
+  invite(uid){ if(!this.room||this.match) return; const code=randCode(); this.room.emit('inv',{to:uid,code:code}).catch(function(){}); toast('招待を送りました。相手の承認を待っています',2500); this.beginDuel(code,uid,true); },
+  onInv(m){ const d=m.data; if(!d||m.isMe||d.to!==this.uid||typeof d.code!=='string'||this.match) return; this.inv={from:m.by,code:d.code,ts:Date.now()}; this.resolve([m.by]); this.ui('invite'); if(S.started&&$('intro').hidden) toast(this.nm(m.by)+' からタイマンの招待',3500); },
+  acceptInv(){ const i=this.inv; this.inv=null; this.ui('invite'); if(i&&!this.match) this.beginDuel(i.code,i.from,false); },
+  declineInv(){ const i=this.inv; this.inv=null; if(i&&this.room) this.room.emit('invr',{to:i.from,ok:0}).catch(function(){}); this.ui('invite'); },
+  onInvr(m){ const d=m.data; if(!d||d.to!==this.uid||d.ok) return; if(this.match&&this.match.host&&Duel.phase==='wait'){ toast(this.nm(m.by)+' は招待を辞退しました',3000); Duel.abort(); } },
+  joinCode(code){ code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6); if(code.length<4){ toast('コードは4〜6文字です'); return; } this.beginDuel(code,null,false); },
+  hostCode(){ const code=randCode(); this.beginDuel(code,null,true); return code; },
+  beginDuel(code,opp,host){
+    if(this.match) return; this.match={code:code,opp:opp,host:host,cpu:false}; this.qSince=0; this.st='duel'; this.setPresence({q:null,st:'duel'});
+    OnlineUI.close(); Ops.start(MISSIONS.findIndex(function(m){ return m.id==='duel'; })); setBrief(false);
+  },
+  startCpu(){ this.match={cpu:true}; OnlineUI.close(); Ops.start(MISSIONS.findIndex(function(m){ return m.id==='duelcpu'; })); setBrief(false); },
+  startSky(target){ this.joinTarget=target||null; OnlineUI.close(); Ops.start(MISSIONS.findIndex(function(m){ return m.id==='sky'; })); setBrief(false); }
+};
+function randCode(){ const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<5;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
+
+/* ---------- state packet sent through room presence (about 20 Hz) ---------- */
+const STATE_KEYS=['t','x','y','z','vx','vy','vz','yw','pt','rl','rp','hp','f','al','k','d','v','inv','rd','gs'];
+function r1(v){ return Math.round(v*10)/10; } function r3(v){ return Math.round(v*1000)/1000; }
+function packState(extra){
+  const fire=IN.fire&&!S.crashed&&!S.noFire&&(!VEH.cur.cabin||S.doorR>.75)?1:0;
+  return Object.assign({t:Date.now(),x:r1(S.pos.x),y:r1(S.pos.y),z:r1(S.pos.z),vx:r1(S.vel.x),vy:r1(S.vel.y),vz:r1(S.vel.z),yw:r3(S.yaw),pt:r3(S.pitch),rl:r3(S.roll),rp:Math.round(S.rpm*100)/100,hp:Math.max(0,Math.round(S.hull)),f:fire,al:S.crashed?0:1,v:VEH.cur.id,inv:S.inv>0?1:0},extra||{});
+}
+
+/* ---------- remote aircraft: interpolation buffer + model + name tag ---------- */
+const Remotes={ g:new THREE.Group(), map:new Map() };
+scene.add(Remotes.g);
+function RemoteEnt(key,veh){
+  this.key=key; this.veh=veh||'uh60ja'; this.uid=null; this.buf=[]; this.offs=[]; this.off=0; this.jit=0; this.lastArr=0; this.delay=.12;
+  this.pos=new THREE.Vector3(); this.vel=new THREE.Vector3(); this.yaw=0; this.pitch=0; this.roll=0; this.rpm=1; this.hp=100; this.f=0; this.al=1; this.k=0; this.d=0; this.inv=0; this.rd=0; this.gs=0;
+  this.c=new THREE.Vector3(); this.fireAcc=0; this.name=''; this.tagKey=''; this.direct=false; this.alPrev=1; this.lastT=0; this.seen=0;
+  this.build(this.veh);
+  const cv=document.createElement('canvas'); cv.width=256; cv.height=72; this.cv=cv; this.tagTex=new THREE.CanvasTexture(cv);
+  this.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:this.tagTex,transparent:true,depthTest:false,depthWrite:false,fog:false})); this.tag.renderOrder=20; Remotes.g.add(this.tag);
+  this.tgt={remote:true,alive:true,c:this.c,r:4.6,ent:this,kind:null,pts:0,hp:999};
+}
+RemoteEnt.prototype.build=function(veh){
+  if(this.P&&this.P.g) Remotes.g.remove(this.P.g);
+  this.veh=veh; this.P=buildHeliModel(false,veh); if(this.P.landSpot){ this.P.g.remove(this.P.landSpot); this.P.g.remove(this.P.landTarget); this.P.landSpot=null; }
+  Remotes.g.add(this.P.g);
+};
+RemoteEnt.prototype.feed=function(pr){
+  if(typeof pr.t!=='number'||pr.t===this.lastT||typeof pr.x!=='number') return;
+  const now=Date.now(); this.lastT=pr.t;
+  const s={t:pr.t,x:pr.x,y:pr.y,z:pr.z,vx:pr.vx||0,vy:pr.vy||0,vz:pr.vz||0,yw:pr.yw||0,pt:pr.pt||0,rl:pr.rl||0};
+  const last=this.buf[this.buf.length-1]; if(last&&s.t<=last.t) return;
+  this.buf.push(s); if(this.buf.length>48) this.buf.shift();
+  this.offs.push(now-pr.t); if(this.offs.length>80) this.offs.shift(); this.off=Math.min.apply(null,this.offs);
+  if(this.lastArr){ const ia=now-this.lastArr, ex=last?(s.t-last.t):ia; this.jit+=(Math.abs(ia-ex)-this.jit)*.1; } this.lastArr=now;
+  this.delay=clamp(.07+this.jit*2.2/1000+.03,.09,.32);
+  this.rpm=pr.rp==null?1:pr.rp; this.hp=pr.hp==null?100:pr.hp; this.f=pr.f|0; this.al=pr.al==null?1:pr.al; this.k=pr.k|0; this.d=pr.d|0; this.inv=pr.inv|0; this.rd=pr.rd|0; this.gs=pr.gs|0;
+  if(pr.v&&pr.v!==this.veh&&VEH[pr.v]) this.build(pr.v);
+  this.seen=now;
+};
+RemoteEnt.prototype.sample=function(){
+  const b=this.buf; if(!b.length) return false;
+  const ts=Date.now()-this.off-this.delay*1000; let a=null,n=null;
+  for(let i=b.length-1;i>=0;i--){ if(b[i].t<=ts){ a=b[i]; n=b[i+1]; break; } }
+  let x,y,z,yw,pt,rl;
+  if(!a){ a=b[0]; x=a.x; y=a.y; z=a.z; yw=a.yw; pt=a.pt; rl=a.rl; }
+  else if(!n){ const dt=Math.min((ts-a.t)/1000,.35); x=a.x+a.vx*dt; y=a.y+a.vy*dt; z=a.z+a.vz*dt; yw=a.yw; pt=a.pt; rl=a.rl; }
+  else {
+    const k=clamp((ts-a.t)/Math.max(1,n.t-a.t),0,1);
+    if(Math.hypot(n.x-a.x,n.z-a.z)>160){ x=n.x; y=n.y; z=n.z; yw=n.yw; pt=n.pt; rl=n.rl; }               // respawn: snap
+    else{ x=a.x+(n.x-a.x)*k; y=a.y+(n.y-a.y)*k; z=a.z+(n.z-a.z)*k; yw=a.yw+angDiff(n.yw,a.yw)*k; pt=a.pt+(n.pt-a.pt)*k; rl=a.rl+(n.rl-a.rl)*k; }
+  }
+  this.pos.set(x,y,z); this.yaw=yw; this.pitch=pt; this.roll=rl; if(a) this.vel.set(a.vx,a.vy,a.vz); return true;
+};
+RemoteEnt.prototype.drawTag=function(){
+  const key=this.name+'|'+Math.round(this.hp/5)+'|'+this.al; if(key===this.tagKey) return; this.tagKey=key;
+  const g=this.cv.getContext('2d'); g.clearRect(0,0,256,72);
+  g.fillStyle='rgba(8,12,6,.62)'; g.fillRect(0,0,256,50); g.strokeStyle='rgba(214,207,166,.5)'; g.strokeRect(.5,.5,255,49);
+  g.fillStyle='#e8e4c4'; g.font='bold 24px "Noto Sans JP",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText((this.name||'PILOT').slice(0,12),128,18);
+  g.fillStyle='rgba(255,255,255,.18)'; g.fillRect(12,34,232,9); const f=this.al?clamp(this.hp/100,0,1):0; g.fillStyle=f>.5?'#7fd05a':f>.25?'#e8b23a':'#e8473a'; g.fillRect(12,34,232*f,9);
+  this.tagTex.needsUpdate=true;
+};
+RemoteEnt.prototype.update=function(dt){
+  if(!this.direct&&!this.sample()){ this.P.g.visible=false; this.tag.visible=false; return; }
+  const g=this.P.g, P=this.P;
+  g.visible=!!this.al; g.position.copy(this.pos); g.rotation.set(this.pitch,this.yaw,this.roll); g.updateMatrixWorld(true);
+  this.c.set(this.pos.x,this.pos.y+1.4,this.pos.z); this.tgt.alive=!!this.al;
+  P.rotorSpin.rotation.y-=this.rpm*this.rpm*20*dt; P.tailSpin.rotation.x+=this.rpm*this.rpm*40*dt;
+  P.rotorDisc.material.opacity=clamp((this.rpm-.35)/.6,0,1)*.2; P.tailDisc.material.opacity=clamp((this.rpm-.35)/.6,0,1)*.15;
+  const bl=Math.sin(S.time*5)>.2; P.beacon.visible=bl; P.navRed.material.opacity=.9; P.navGreen.material.opacity=.9;
+  if(this.al&&this.hp<55&&Math.random()<dt*(this.hp<30?14:6)) spawnFx({pos:new THREE.Vector3(this.pos.x,this.pos.y+1.2,this.pos.z),vel:new THREE.Vector3(this.vel.x*.7,1.5,this.vel.z*.7),s0:1,s1:6,life:1.6,color:this.hp<30?0x111111:0x555555,op:.6,drag:.4});
+  if(this.alPrev&&!this.al&&this.pos.y>-100){ Foes.explode(new THREE.Vector3(this.pos.x,this.pos.y+1.2,this.pos.z),3); Foes.fires.push({p:new THREE.Vector3(this.pos.x,Math.max(groundY(this.pos.x,this.pos.z),this.pos.y-20)+1,this.pos.z),t:0,big:1}); }
+  this.alPrev=this.al;
+  // gunfire: cosmetic tracers everywhere, damaging only in a duel
+  if(this.f&&this.al){ const V=VEH[this.veh]||VEH.uh60ja, gd=1/V.gun.rate; this.fireAcc+=dt; while(this.fireAcc>=gd){ this.fireAcc-=gd; this.shoot(V); } } else this.fireAcc=0;
+  const dist=this.pos.distanceTo(camera.position), sc=clamp(dist*.30,10,260);
+  this.tag.visible=!!this.al&&dist>25&&dist<6000; this.tag.position.set(this.pos.x,this.pos.y+7+dist*.012,this.pos.z); this.tag.scale.set(sc,sc*72/256,1); this.drawTag();
+};
+RemoteEnt.prototype.shoot=function(V){
+  const g=this.P.g, o=g.localToWorld(new THREE.Vector3(V.mz[0],V.mz[1],V.mz[2]));
+  const d=new THREE.Vector3(0,0,1).applyQuaternion(g.quaternion); d.x+=rnd(-.006,.006); d.y+=rnd(-.006,.006); d.z+=rnd(-.006,.006); d.normalize();
+  spawnShot(o,d.multiplyScalar(V.gun.spd).add(this.vel),Duel.active&&!this.inv?V.gun.dmg:0,this.uid||'remote',0xff6a3a);
+};
+function spawnShot(o,vel,dmg,owner,color){
+  const t=Foes.shots.find(function(s){ return !s.on; }); if(!t) return;
+  t.on=true; t.life=2.2; t.dmg=dmg; t.cdmg=dmg; t.owner=owner; t.vel.copy(vel); t.mesh.position.copy(o); t.mesh.scale.set(1,1,1); t.mesh.visible=true; t.mesh.lookAt(tmpB.copy(o).add(vel));
+  spawnFx({pos:o.clone(),vel:vel.clone().multiplyScalar(.05),s0:.8,s1:1.6,life:.07,color:0xffd070,op:1,add:true});
+}
+Remotes.get=function(key,veh){ let e=this.map.get(key); if(!e){ e=new RemoteEnt(key,veh); this.map.set(key,e); } return e; };
+Remotes.drop=function(key){ const e=this.map.get(key); if(!e) return; Remotes.g.remove(e.P.g); Remotes.g.remove(e.tag); this.map.delete(key); const i=targets.indexOf(e.tgt); if(i>=0) targets.splice(i,1); };
+Remotes.clear=function(){ Array.from(this.map.keys()).forEach(function(k){ Remotes.drop(k); }); };
+Remotes.feedPeers=function(peers,accept){
+  const seen={}; for(let i=0;i<peers.length;i++){ const p=peers[i]; if(p.isMe||p.kind!=='viewer'||!p.presence||typeof p.presence.x!=='number'||(accept&&!accept(p))) continue;
+    const e=this.get(p.peer,p.presence.v); e.uid=Net.pid(p); e.name=Net.nm(e.uid); e.feed(p.presence); seen[p.peer]=1; if(targets.indexOf(e.tgt)<0) targets.push(e.tgt); }
+  Array.from(this.map.keys()).forEach(function(k){ if(!seen[k]&&!Remotes.map.get(k).direct) Remotes.drop(k); });
+};
+Remotes.update=function(dt){ this.map.forEach(function(e){ e.update(dt); }); };
+
+/* ---------- hits on a remote aircraft from my own weapons: feedback only (the victim decides real damage) ---------- */
+Net.hitRemote=function(tg,pw){
+  const e=tg.ent; if(!e||!e.al) return; Duel.hitMark();
+  if(e.bot){ Duel.botDamage(VEH.cur.gun.dmg*pw*(VEH.cur.gun.rate>12?1.1:1)); }
+  if(Duel.active&&!e.bot) S.hits++;
+};
+
+/* ---------- CPU opponent ---------- */
+const Bot={
+  e:null, hp:100, t:0, burst:0, rest:1, respT:0, spawnN:0, k:0, d:0,
+  start(c,alt){ this.c=c; this.alt=alt; this.hp=100; this.k=0; this.d=0; this.respT=0; this.t=0; this.burst=0; this.rest=1.5;
+    if(!this.e){ this.e=new RemoteEnt('bot','ah64'); this.e.direct=true; this.e.name='CPU アパッチ'; this.e.bot=true; this.e.uid='bot'; }
+    if(targets.indexOf(this.e.tgt)<0) targets.push(this.e.tgt); this.e.tgt.alive=true; this.spawn(); },
+  spawn(){ const e=this.e; e.pos.set(this.c.x+(Math.random()<.5?-1:1)*480,this.alt,this.c.z+rnd(-120,120)); e.vel.set(0,0,0); e.yaw=Math.atan2(S.pos.x-e.pos.x,S.pos.z-e.pos.z); e.al=1; e.hp=100; this.hp=100; e.inv=1; this.inv=3; e.rpm=1; },
+  damage(d){ if(this.inv>0||!this.e.al) return; this.hp-=d; this.e.hp=Math.max(0,this.hp); if(this.hp<=0){ this.e.al=0; this.d++; this.e.d=this.d; this.respT=4; Duel.onBotDown(); } },
+  step(dt){
+    const e=this.e; if(!e) return; this.t+=dt; this.inv=Math.max(0,(this.inv||0)-dt); e.inv=this.inv>0?1:0;
+    if(!e.al){ this.respT-=dt; if(this.respT<=0&&!Duel.over) this.spawn(); e.update(dt); return; }
+    const p=e.pos, dx=S.pos.x-p.x, dy=S.pos.y-p.y, dz=S.pos.z-p.z, hd=Math.hypot(dx,dz), dist=Math.hypot(hd,dy);
+    const live=Duel.phase==='fight'&&!S.crashed;
+    let want=Math.atan2(dx,dz)+(dist<320?Math.sin(this.t*.8)*.7:0); if(!live) want=e.yaw;
+    const da=angDiff(want,e.yaw), tr=1.25; e.yaw+=clamp(da,-tr*dt,tr*dt);
+    const sp=!live?0:dist>520?40:dist<140?-14:(dist<260?16:28);
+    const fx=Math.sin(e.yaw), fz=Math.cos(e.yaw), cur=e.vel.x*fx+e.vel.z*fz, nv=cur+(sp-cur)*Math.min(1,dt*.9);
+    e.vel.x=fx*nv+Math.cos(e.yaw)*Math.sin(this.t*.9)*(live?6:0); e.vel.z=fz*nv-Math.sin(e.yaw)*Math.sin(this.t*.9)*(live?6:0);
+    const ty=live?clamp(S.pos.y+Math.sin(this.t*.45)*22,groundY(p.x,p.z)+45,this.alt+260):this.alt; e.vel.y=clamp((ty-p.y)*.6,-9,9);
+    p.x+=e.vel.x*dt; p.y+=e.vel.y*dt; p.z+=e.vel.z*dt;
+    const want_p=live?clamp(-Math.atan2(dy,Math.max(hd,30)),-.5,.5):0; e.pitch+=(clamp(want_p+nv*.004,-.5,.5)-e.pitch)*Math.min(1,dt*2.4); e.roll+=(clamp(da*.5,-.5,.5)-e.roll)*Math.min(1,dt*2);
+    e.rpm=1; e.hp=Math.max(0,this.hp);
+    // firing: bursts when roughly facing the player
+    const los=Math.abs(angDiff(Math.atan2(dx,dz),e.yaw)); e.f=0;
+    if(live&&dist<560&&los<.2&&S.inv<=0){ if(this.rest>0) this.rest-=dt; else { this.burst+=dt; e.f=1; if(this.burst>1.1){ this.burst=0; this.rest=1.3+Math.random(); } } }
+    e.update(dt);
+    if(e.f){ /* e.update already spawned shots from the muzzle; add lead by nudging yaw slightly toward the target */ }
+  }
+};
+
+/* ---------- duel (1v1) ---------- */
+const Duel={
+  active:false,cpu:false,over:false,phase:'idle',cd:0,room:null,opp:null,oppUid:null,slot:0,center:null,alt:200,tleft:360,target:3,myK:0,myD:0,respT:0,alive:true,
+  ammo:0,cool:0,rk:[],t:0,sendT:0,waitT:0,goT:0,leaver:false,lastOppD:0,resultShown:false,hint:'',unsub:[],hitT:0,outT:0,goSent:false,
+  start(cpu){
+    this.active=true; this.cpu=cpu; this.over=false; this.phase=cpu?'count':'wait'; this.room=null; this.opp=null; this.oppUid=null; this.myK=0; this.myD=0; this.respT=0; this.alive=true;
+    this.t=0; this.tleft=360; this.waitT=0; this.resultShown=false; this.lastOppD=0; this.goSent=false; this.outT=0; this.rk.length=0; this.leaver=false;
+    S.tod=12.5; S.weather='clear'; updateEnv(); S.noFire=true; S.inv=99;
+    const c={x:HOME.x,z:HOME.z}; let mh=0; for(let a=-900;a<=900;a+=150) for(let b=-900;b<=900;b+=150) mh=Math.max(mh,terrainH(c.x+a,c.z+b)); this.center=c; this.alt=Math.max(AF+160,mh+90);
+    this.ammo=VEH.cur.rk?VEH.cur.rk.n:0;
+    this.rkMesh=this.rkMesh||(function(){ const a=[]; const geo=new THREE.CylinderGeometry(.07,.07,1.1,6).rotateX(Math.PI/2), mat=new THREE.MeshBasicMaterial({color:0xdddddd,fog:false}); for(let i=0;i<10;i++){ const m=new THREE.Mesh(geo,mat); m.visible=false; scene.add(m); a.push(m); } return a; })();
+    if(cpu){ this.slot=0; this.place(0); Bot.start(c,this.alt); this.opp=Bot.e; this.cd=4.5; Net.ui('duel'); }
+    else{
+      const m=Net.match||{}; this.oppUid=m.opp||null; this.slot=m.opp?(Net.uid<m.opp?0:1):(m.host?0:1); this.place(this.slot);
+      Net.room&&Net.room.join('d-'+String(m.code).toLowerCase()).then(function(r){ if(!Duel.active) { r.leave(); return; } Duel.attach(r); }).catch(function(){ toast('対戦ルームに接続できません',3000); Duel.abort(); });
+    }
+    radio('司令部',cpu?'CPU機との模擬空戦。先に3機撃墜せよ。':'対戦相手を待っています。');
+  },
+  attach(r){
+    this.room=r; const me=this;
+    this.unsub.push(r.onPeers(function(ch){ me.onPeers(ch.peers); }));
+    this.unsub.push(r.on('evt',function(m){ me.onEvt(m); }));
+    this.unsub.push(r.on('rk',function(m){ me.onRocket(m); }));
+    this.unsub.push(r.on('chat',function(m){ Net.onChat(m); }));
+    this.unsub.push(r.on('ping',function(m){ if(!m.isMe) r.emit('pong',{to:m.peer,t:m.data&&m.data.t}).catch(function(){}); }));
+    this.unsub.push(r.on('pong',function(m){ const d=m.data; if(d&&d.to===Net.myPeer(r)&&!m.isMe) Net.rtt[m.peer]=Math.max(1,Date.now()-d.t); }));
+    this.pingI=setInterval(function(){ if(r.connected()) r.emit('ping',{t:Date.now()}).catch(function(){}); },1500);
+    r.presence(packState({rd:1,k:0,d:0,rt:Prof.d.rating})).catch(function(){}); this.onPeers(r.peers());
+  },
+  onPeers(peers){
+    const others=peers.filter(function(p){ return !p.isMe&&p.kind==='viewer'; });
+    let opp=others.filter(function(p){ return !Duel.oppUid||Net.pid(p)===Duel.oppUid; })[0]||null;
+    if(opp&&!this.oppUid){ this.oppUid=Net.pid(opp); Net.resolve([this.oppUid]); }
+    const mePeer=peers.filter(function(p){ return p.isMe&&p.sameTab; })[0];
+    if(this.oppUid&&mePeer&&Net.match&&!Net.match.opp){ this.slot=Net.uid<this.oppUid?0:1; if(this.phase==='wait') this.place(this.slot); }
+    Remotes.feedPeers(peers,function(p){ return p===opp; });
+    this.opp=opp?Remotes.map.get(opp.peer)||null:null; this.oppPeer=opp;
+    if(this.opp&&!this.opp.name) this.opp.name=Net.nm(this.oppUid);
+  },
+  place(slot){
+    const c=this.center; resetHeli(); S.pos.set(c.x+(slot?420:-420),this.alt,c.z+rnd(-50,50)); S.vel.set(0,0,0); S.yaw=slot?-Math.PI/2:Math.PI/2; S.pitch=0; S.roll=0; S.rpm=1; S.onGround=false; S.holdOn=false; S.coll=.5; S.doorR=S.doorRT=0;
+    S.noFire=this.phase!=='fight'; S.inv=this.phase==='fight'?3:99; S.hull=100; S.lastAtk=null; S.cam=0; camSnap=true; syncHeli(); S.started=true; S.paused=false; $('crash').hidden=true;
+    this.ammo=VEH.cur.rk?VEH.cur.rk.n:0; this.alive=true;
+  },
+  abort(){ if(!this.active) return; Net.match=null; toBrief(); },
+  leave(){ this.abort(); },
+  end(){
+    if(!this.active) return;
+    if(!this.cpu&&!this.over&&this.phase==='fight'&&!this.leaver){ this.leaver=true; this.finish(false,'退出',true); try{ if(this.room) this.room.emit('evt',{k:'bye'}).catch(function(){}); }catch(e){} }
+    this.active=false; this.unsub.forEach(function(u){ try{ u(); }catch(e){} }); this.unsub=[]; clearInterval(this.pingI);
+    const r=this.room; this.room=null; if(r){ try{ r.presence(nullState()).catch(function(){}); r.leave(); }catch(e){} }
+    Remotes.clear(); if(Bot.e){ const i=targets.indexOf(Bot.e.tgt); if(i>=0) targets.splice(i,1); Remotes.g.remove(Bot.e.P.g); Remotes.g.remove(Bot.e.tag); Bot.e=null; }
+    this.opp=null; Net.match=null; Net.st='menu'; Net.setPresence({st:'menu'}); S.noFire=false; S.inv=0; this.rkMesh&&this.rkMesh.forEach(function(m){ m.visible=false; }); Net.ui('duel');
+  },
+  /* ----- events ----- */
+  onEvt(m){
+    const d=m.data; if(!d||m.isMe) return;
+    if(d.k==='go'&&this.phase==='wait'){ this.startCount(); }
+    else if(d.k==='bye'&&this.phase==='fight'&&!this.over){ this.finish(true,'相手が退出'); }
+    else if(d.k==='rematch'){ this.oppRematch=true; if(this.myRematch&&this.over) this.rematch(); }
+    else if(d.k==='dead'){ if(d.by===Net.uid){ toast('撃墜！ '+(this.myK+1)+' / '+this.target,1800); } }
+  },
+  startCount(){ if(this.phase!=='wait') return; this.phase='count'; this.cd=4.5; this.waitT=0; radio('司令部','マッチ成立。カウントダウン開始。'); Net.ui('duel'); },
+  onRocket(m){ const d=m.data; if(!d||m.isMe||!this.active||this.phase!=='fight'||!Array.isArray(d.p)||!Array.isArray(d.d)) return; this.addRocket(new THREE.Vector3(d.p[0],d.p[1],d.p[2]),new THREE.Vector3(d.d[0],d.d[1],d.d[2]),(d.v?new THREE.Vector3(d.v[0],d.v[1],d.v[2]):new THREE.Vector3()),false); },
+  addRocket(p,dir,v0,own){ const m=this.rkMesh.find(function(x){ return !x.visible; }); if(!m) return; m.visible=true; m.position.copy(p); dir=dir.clone().normalize(); this.rk.push({m:m,v:dir.clone().multiplyScalar(95).add(v0),dir:dir,t:0,own:own}); spawnFx({pos:p.clone(),vel:v0.clone(),s0:2,s1:7,life:.5,color:0xffffff,op:.7}); },
+  act(){ if(!this.active||this.phase!=='fight'||!VEH.cur.rk||this.ammo<=0||this.cool>0||S.crashed) return; this.ammo--; this.cool=.35;
+    const side=this.ammo%2?1:-1, rp=VEH.cur.rk.pos; heli.localToWorld(tmpA.set(side*rp[0],rp[1],rp[2]+.5)); heli.localToWorld(tmpB.set(side*rp[0],rp[1]+1.4,rp[2]+100.5));
+    const d=tmpB.sub(tmpA).normalize(), o=tmpA.clone(); this.addRocket(o,d,S.vel.clone(),true); Snd.shot();
+    if(!this.cpu&&this.room) this.room.emit('rk',{p:[r1(o.x),r1(o.y),r1(o.z)],d:[r3(d.x),r3(d.y),r3(d.z)],v:[r1(S.vel.x),r1(S.vel.y),r1(S.vel.z)]}).catch(function(){}); },
+  actLabel(){ return VEH.cur.rk?'ロケット':'--'; }, actOn(){ return !!VEH.cur.rk&&this.ammo>0; },
+  rocketStep(dt){
+    for(let i=this.rk.length-1;i>=0;i--){ const r=this.rk[i]; r.t+=dt; r.v.addScaledVector(r.dir,230*dt*(r.t<1.5?1:0)); r.v.y-=G*.3*dt;
+      r.m.position.addScaledVector(r.v,dt); r.m.lookAt(tmpC.copy(r.m.position).add(r.v));
+      spawnFx({pos:r.m.position.clone(),vel:new THREE.Vector3(),s0:1,s1:4,life:1.2,color:0xe8e8e8,op:.5,drag:.3});
+      const p=r.m.position; let boom=p.y<groundY(p.x,p.z)+.3||r.t>8;
+      if(!boom&&r.own&&this.opp&&this.opp.al&&p.distanceTo(this.opp.c)<9){ boom=true; this.hitMark(); if(this.opp.bot) Bot.damage(30); }
+      if(!boom&&!r.own&&this.alive&&p.distanceTo(tmpA.set(S.pos.x,S.pos.y+1.2,S.pos.z))<9){ boom=true; Foes.hurt(30,this.oppUid); }
+      if(boom){ Foes.explode(p.clone(),1); r.m.visible=false; this.rk.splice(i,1); } }
+  },
+  hitMark(){ const el=$('hitm'); if(!el) return; el.classList.add('on'); clearTimeout(this.hitT); this.hitT=setTimeout(function(){ el.classList.remove('on'); },110); Snd.beep(1500,.04); },
+  botDamage(d){ Bot.damage(d); },
+  onBotDown(){ this.myK++; S.score+=150; toast('撃墜！ '+this.myK+' / '+this.target,1800); Foes.explode(this.opp.c.clone(),3); },
+  /* ----- main tick (also runs while crashed) ----- */
+  tick(dt){
+    if(!this.active) return; this.t+=dt; this.cool=Math.max(0,this.cool-dt); S.inv=Math.max(0,S.inv-dt<0?0:S.inv-dt);
+    if(this.phase!=='fight') S.inv=99; $('crash').hidden=true;
+    if(this.cpu) Bot.step(dt);
+    if(!this.cpu&&this.opp&&!this.opp.bot){ /* remote entities update through Ops.visuals */ }
+    this.rocketStep(dt);
+    // send my state at ~20 Hz
+    if(this.room){ this.sendT+=dt; if(this.sendT>=.05){ this.sendT=0; this.room.presence(packState({rd:1,k:this.myK,d:this.myD,rt:Prof.d.rating,gs:this.phase!=='wait'?1:0})).catch(function(){}); } }
+    if(this.phase==='wait'){
+      this.waitT+=dt; S.noFire=true; Net.ui('duelwait');
+      if(this.room&&this.opp&&this.opp.rd&&!this.goSent){ const leader=Net.uid<this.oppUid; if(leader){ this.goT-=dt; if(this.goT<=0){ this.goT=.5; this.room.emit('evt',{k:'go'}).catch(function(){}); } if(this.opp.gs){ this.goSent=true; } this.startCount(); } else if(this.opp.gs){ this.startCount(); } }
+      if(this.waitT>120){ toast('対戦相手が来ませんでした',3000); this.abort(); }
+    }
+    else if(this.phase==='count'){
+      this.cd-=dt; S.noFire=true; S.inv=99; const n=Math.ceil(this.cd);
+      if(this.cd<=0){ this.phase='fight'; S.noFire=false; S.inv=3; toast('FIGHT!',1400); radio('司令部','交戦開始。'); Snd.beep(1500,.3); Net.ui('duel'); }
+      else if(n!==this.lastN){ this.lastN=n; if(n<=3) { toast(String(n),700); Snd.beep(900,.1); } }
+    }
+    else if(this.phase==='fight'){
+      this.tleft-=dt;
+      // boundary
+      const c=this.center, dd=Math.hypot(S.pos.x-c.x,S.pos.z-c.z);
+      if(dd>1300&&this.alive){ this.outT+=dt; if(this.outT>.8){ this.outT=0; toast('戦闘空域の外です！引き返してください',1400); } S.hull-=dt*4; if(S.hull<=0&&!S.crashed){ S.hull=0; crash('空域を離脱'); } } else this.outT=0;
+      // my death
+      if(S.crashed&&this.alive){ this.alive=false; this.myD++; this.respT=4; if(!this.cpu&&this.room){ this.room.emit('evt',{k:'dead',by:S.lastAtk||null}).catch(function(){}); this.room.presence(packState({d:this.myD,k:this.myK,al:0})).catch(function(){}); } toast('撃墜された… '+this.myD+' / '+this.target,2000); }
+      if(!this.alive){ this.respT-=dt; if(this.respT<=0&&!this.over){ S.crashed=false; this.place(this.slot); S.inv=3; } }
+      // opponent progress
+      if(!this.cpu&&this.opp){ if(this.opp.d>this.lastOppD){ const n=this.opp.d-this.lastOppD; this.lastOppD=this.opp.d; this.myK=Math.max(this.myK,this.opp.d); S.score+=150*n; Foes.explode(this.opp.c.clone(),3); } }
+      // forfeit if the opponent disappeared
+      if(!this.cpu&&!this.opp){ this.goneT=(this.goneT||0)+dt; if(this.goneT>7&&!this.over) this.finish(true,'相手の通信切断'); } else this.goneT=0;
+      // result
+      const oppD=this.cpu?Bot.d:(this.opp?this.opp.d:0), myD=this.myD;
+      if(!this.over){ if(oppD>=this.target&&oppD>myD) this.finish(true,'規定撃墜数に到達'); else if(myD>=this.target&&myD>oppD) this.finish(false,'規定撃墜数に到達'); else if(oppD>=this.target&&myD>=this.target) this.finish(oppD<myD,'同時決着');
+        else if(this.tleft<=0){ if(oppD>myD) this.finish(true,'時間切れ'); else if(myD>oppD) this.finish(false,'時間切れ'); else if(this.tleft<-90) this.finish(false,'引き分け',false,true); } }
+    }
+  },
+  update(dt){ /* markers and objective text (alive only) */
+    const o=this.opp; if(o&&o.al){ setMarkers([{pos:o.c,label:(o.name||'敵機'),main:true}]); } else setMarkers([]);
+    const t=this.phase==='wait'?'対戦相手を待っています'+(Net.match&&Net.match.code?'（コード '+Net.match.code+'）':''):this.phase==='count'?'まもなく交戦開始':this.tleft>0?'撃墜 '+this.myK+' - '+(this.cpu?Bot.d:(this.opp?this.opp.d:0))+'　残り '+fmtTime(Math.max(0,this.tleft)):'延長戦：次の撃墜で決着';
+    setObj(t);
+  },
+  panel(){ const o=this.opp; const rows=[['撃墜 自/敵',this.myK+' / '+(this.cpu?Bot.d:(o?o.d:0)),''],['敵機',o&&o.al?Math.round(o.hp)+'%':'--',o&&o.hp<30?'warn':''],['機体',Math.round(S.hull)+'%',S.hull<35?'warn':'']];
+    if(!this.cpu){ const rt=o&&Net.rtt[o.key]; rows.push(['通信',rt?rt+' ms':'--',rt>200?'warn':'']); } if(VEH.cur.rk) rows.push(['ロケット',this.ammo+' / '+VEH.cur.rk.n,this.ammo<4?'warn':'']); return rows; },
+  /* ----- result: Elo rating + points ----- */
+  finish(win,why,silent,draw){
+    if(this.over) return; this.over=true; this.phase='over';
+    const d=Prof.d; let delta=0, gain=0, oppRt=1000;
+    if(!this.cpu){ const pr=this.opp&&Net.players.get(this.oppUid); oppRt=(this.oppPeer&&this.oppPeer.presence.rt)||(pr&&pr.rating)||1000; const ex=1/(1+Math.pow(10,(oppRt-d.rating)/400)); delta=Math.round(32*((draw?.5:win?1:0)-ex)); if(silent&&!win) delta=Math.min(delta,-8); d.rating=Math.max(100,d.rating+delta); }
+    if(draw){} else if(win) d.w++; else d.l++;
+    d.k+=this.myK; d.dth+=this.myD; gain=Math.round((this.cpu?(win?60:20):(draw?60:win?180:50))+25*this.myK); Prof.award(gain);
+    if(!this.cpu){ d.hist.push({o:this.oppUid,r:draw?'d':win?'w':'l',d:delta,t:Date.now()}); if(d.hist.length>20) d.hist.shift(); Prof.save(); Net.push(true); }
+    if(silent) return;
+    S.noFire=true; S.inv=99; this.resultShown=true; $('crash').hidden=true;
+    const rows=[['結果',draw?'引き分け':(win?'勝利':'敗北')+'（'+why+'）'],['撃墜（自 / 敵）',this.myK+' / '+(this.cpu?Bot.d:(this.opp?this.opp.d:this.myD))],['被撃墜',String(this.myD)]];
+    if(!this.cpu) rows.push(['レーティング',d.rating+'（'+(delta>=0?'+':'')+delta+'）'],['対戦相手',Net.nm(this.oppUid)+'　'+oppRt]);
+    rows.push(['獲得ポイント','+'+gain+' pt'],['所持ポイント',d.pts+' pt']);
+    Net.ui('duel'); setTimeout(function(){ showResult({title:'タイマン'},draw?'DRAW':win?'WIN':'LOSE',rows); },1200);
+  },
+  rematch(){
+    if(this.cpu){ $('result').hidden=true; Ops.start(O.idx); return; }
+    this.myRematch=true; if(this.room) this.room.emit('evt',{k:'rematch'}).catch(function(){});
+    if(this.oppRematch){ this.oppRematch=false; this.myRematch=false; this.restart(); } else toast('相手の再戦承認を待っています…',2500);
+  },
+  restart(){
+    $('result').hidden=true; this.over=false; this.phase='count'; this.cd=4.5; this.myK=0; this.myD=0; this.lastOppD=0; this.tleft=360; this.rk.length=0; this.leaver=false; this.resultShown=false;
+    // presence counters restart from zero for both clients
+    if(this.room) this.room.presence(packState({rd:1,k:0,d:0,gs:1})).catch(function(){});
+    this.place(this.slot); S.noFire=true;
+  },
+  visuals(dt){}
+};
+function nullState(){ const o={}; STATE_KEYS.forEach(function(k){ o[k]=null; }); return o; }
+
+/* ---------- online free flight: everyone in the lobby room is visible ---------- */
+const Sky={
+  active:false, sendT:0, near:0,
+  start(){
+    this.active=true; Net.st='sky'; Net.setPresence({st:'sky'});
+    const tg=Net.joinTarget; Net.joinTarget=null;
+    if(tg){ const p=Net.online(tg); if(p&&typeof p.presence.x==='number'){ resetHeli(); S.pos.set(p.presence.x+50,p.presence.y+10,p.presence.z+50); S.vel.set(0,0,0); S.yaw=p.presence.yw||0; S.rpm=1; S.onGround=false; S.coll=.5; syncHeli(); camSnap=true; S.started=true; S.cam=0; toast(Net.nm(tg)+' の隣に合流しました',2500); } }
+    HND.free.start.call(HND.free);
+    radio('司令部',Net.state==='online'?'同じ空域のパイロットが表示されます。':'オフラインのため、他のプレイヤーは表示されません。');
+  },
+  sync(){ if(!this.active||!Net.room) return; Remotes.feedPeers(Net.room.peers(),function(p){ return p.presence.st==='sky'; }); },
+  update(dt){
+    HND.free.update.call(HND.free,dt);
+    const near=[]; Remotes.map.forEach(function(e){ if(e.al) near.push(e); }); this.near=near.length;
+    if(near.length) setMarkers(near.slice(0,6).map(function(e,i){ return {pos:e.c,label:e.name||'',main:i===0,cls:i?'sub':''}; }));
+  },
+  tickNet(dt){ if(!this.active||!Net.room||Net.state!=='online') return; this.sendT+=dt; if(this.sendT>=.07){ this.sendT=0; Net.room.presence(packState({st:'sky',u:Net.uid,veh:VEH.cur.id,rt:Prof.d.rating})).catch(function(){}); } },
+  act(){ HND.free.act.call(HND.free); }, actLabel(){ return HND.free.actLabel.call(HND.free); },
+  panel(){ const rows=HND.free.panel.call(HND.free); rows.unshift(['同空域',this.near+' 人','']); return rows; },
+  end(){ if(!this.active) return; this.active=false; HND.free.end.call(HND.free); Remotes.clear(); Net.st='menu'; if(Net.room){ const n=nullState(); n.st='menu'; Net.room.presence(n).catch(function(){}); } Net.ui('sky'); }
+};
+
+/* ---------- plumbing into the mission controller ---------- */
+(function(){
+  const baseUpd=Ops.update, baseVis=Ops.visuals, baseHit=Ops.targetHit;
+  Ops.update=function(dt){ if(S.started&&!S.paused){ Duel.tick(dt); Sky.tickNet(dt); } baseUpd.call(Ops,dt); };
+  Ops.visuals=function(dt){ baseVis.call(Ops,dt); Remotes.update(dt); };
+})();
+Net.init();
+/* ===================== online UI: lobby, friends, ranking, garage, chat ===================== */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+const ST_LABEL={menu:'待機中',queue:'マッチング中',duel:'対戦中',sky:'飛行中'};
+function avatarOf(id){ const u=Net.avatars[id]; return u?'<img alt="" src="'+esc(u)+'">':'<img alt="" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 fill=%27%23333%27/%3E%3C/svg%3E">'; }
+function bars(v){ const L=[['速度','speed'],['機動','agil'],['装甲','armor'],['火力','fire'],['汎用','util']]; return L.map(function(l){ return '<span>'+l[0]+'</span><i><u style="width:'+(v.stat[l[1]]*20)+'%"></u></i>'; }).join(''); }
+const OnlineUI={
+  tab:'duel', sort:'rating', timer:0,
+  open(t){ if(t) this.tab=t; $('online').hidden=false; this.build(); },
+  close(){ $('online').hidden=true; },
+  meCard(){
+    const d=Prof.d, id=Net.uid, on=Net.state==='online';
+    $('ol-me').innerHTML=(id?avatarOf(id):'<img alt="" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 fill=%27%23333%27/%3E%3C/svg%3E">')+
+      '<div><div class="nm">'+esc(id?Net.nm(id):'ゲスト（オフライン）')+'</div><div class="st"><span>'+(on?'<b style="color:#6fe07a">● ONLINE</b>':Net.state==='connecting'?'接続中…':'○ OFFLINE')+'</span><span>レート '+d.rating+'</span><span>'+d.pts+' pt</span><span>'+d.w+'勝 '+d.l+'敗</span><span>機体 '+esc(VEH[d.veh].name)+'</span></div></div>';
+    $('ol-note').textContent=Net.note||'';
+  },
+  build(){
+    const me=this; this.meCard();
+    $('ol-tabs').querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.t===me.tab); });
+    const B=$('ol-body'), t=this.tab;
+    if(t==='duel') B.innerHTML='<div class="olh">対戦  DUEL</div><div class="olrow"><button class="obtn" data-a="q" id="od-q">クイックマッチ</button><button class="obtn sec" data-a="host">ルーム作成</button><input id="od-code" class="otxt" maxlength="6" placeholder="ルームコード" style="max-width:140px;flex:none;text-transform:uppercase"><button class="obtn sec" data-a="join">コードで参加</button></div>'+
+      '<div class="olrow"><button class="obtn sec" data-a="cpu">CPU練習</button><button class="obtn sec" data-a="sky">オンライン・フリーフライト</button></div><p class="hint" id="od-msg">先に3回撃墜した方が勝ち。勝敗でレーティングとポイントが増減します。招待されたら画面上部に通知が出ます。</p>'+
+      '<div class="olh">いま入っているプレイヤー</div><div id="od-list" class="olb"></div>';
+    else if(t==='friends') B.innerHTML='<div class="olh">フレンド申請</div><div id="of-in" class="olb"></div><div class="olh">フレンド</div><div id="of-fr" class="olb"></div><div class="olh">申請中</div><div id="of-out" class="olb"></div>'+
+      '<div class="olh">プレイヤーを探す</div><div class="olrow"><input id="of-q" class="otxt" placeholder="名前で検索（同じ組織のメンバー）"></div><div id="of-res" class="olb"></div><div class="olh">最近のプレイヤー</div><div id="of-sug" class="olb"></div>';
+    else if(t==='rank') B.innerHTML='<div class="olrow"><button class="obtn sec sm" data-a="sort" data-id="rating">レーティング順</button><button class="obtn sec sm" data-a="sort" data-id="tot">累計ポイント順</button><button class="obtn sec sm" data-a="sort" data-id="w">勝利数順</button></div><div id="or-list" class="olb"></div>';
+    else if(t==='garage') B.innerHTML='<div class="olh">ガレージ  GARAGE</div><p class="hint" id="og-pts"></p><div class="vcards" id="og-list"></div><p class="hint">ミッション達成・タイマンの結果でポイントを獲得。ポイントで新しい機体をアンロックできます。UH-60系以外はキャビンが無いため、ラペル・ウインチ作戦はUH-60JAで出撃します。</p>';
+    else B.innerHTML='<div class="olh">ロビーチャット</div><div class="chatlog" id="oc-log"></div><div class="olrow"><input id="oc-in" class="otxt" maxlength="120" placeholder="メッセージを入力"><button class="obtn" data-a="say">送信</button></div>';
+    this.refresh();
+  },
+  refresh(){
+    if($('online').hidden) return; const t=this.tab, on=Net.state==='online';
+    if(t==='duel'){
+      const q=$('od-q'); if(q){ q.textContent=Net.qSince?'マッチング中…（取消）':'クイックマッチ'; q.classList.toggle('warn',!!Net.qSince); q.disabled=!on||!Net.room||(!Net.qSince&&Net.canWrite===false&&false); }
+      const L=$('od-list'); if(!L) return; const ps=Net.lobby.filter(function(p){ return !p.isMe&&Net.pid(p); });
+      const fr=Net.friendsOf().friends;
+      L.innerHTML=ps.length?ps.map(function(p){ const id=Net.pid(p), st=p.presence.st||'menu', isF=fr.indexOf(id)>=0;
+        return '<div class="pl">'+avatarOf(id)+'<div class="nm">'+esc(Net.nm(id))+'<small>レート '+(p.presence.rt||1000)+' ／ '+esc(ST_LABEL[st]||st)+(p.presence.veh&&VEH[p.presence.veh]?' ／ '+esc(VEH[p.presence.veh].name):'')+(Net.rtt[p.peer]?' ／ '+Net.rtt[p.peer]+'ms':'')+'</small></div>'+
+          (st==='sky'?'<button class="obtn sm sec" data-a="meet" data-id="'+esc(id)+'">合流</button>':'')+
+          (st==='menu'||st==='queue'?'<button class="obtn sm" data-a="inv" data-id="'+esc(id)+'">タイマン招待</button>':'')+
+          (isF?'':'<button class="obtn sm sec" data-a="addf" data-id="'+esc(id)+'">＋フレンド</button>')+'</div>'; }).join(''):'<p class="hint">'+(on?'まだ他のプレイヤーはいません。共有リンクを友達に送って、同じページを開いてもらいましょう。':'オンラインに接続できていません。')+'</p>';
+    }
+    else if(t==='friends'){
+      const F=Net.friendsOf(); const card=function(id,btns){ const p=Net.online(id); const st=p?(p.presence.st||'menu'):''; const pl=Net.players.get(id)||{};
+        return '<div class="pl">'+avatarOf(id)+'<span class="dot '+(p?(st==='duel'?'busy':'on'):'')+'"></span><div class="nm">'+esc(Net.nm(id))+'<small>'+(p?esc(ST_LABEL[st]||st):'オフライン')+' ／ レート '+(pl.rating||1000)+'</small></div>'+btns+'</div>'; };
+      $('of-in').innerHTML=F.incoming.length?F.incoming.map(function(id){ return card(id,'<button class="obtn sm" data-a="addf" data-id="'+esc(id)+'">承認</button><button class="obtn sm sec" data-a="ign" data-id="'+esc(id)+'">無視</button>'); }).join(''):'<p class="hint">届いている申請はありません。</p>';
+      $('of-fr').innerHTML=F.friends.length?F.friends.map(function(id){ const p=Net.online(id), st=p?(p.presence.st||'menu'):'';
+        return card(id,(st==='sky'?'<button class="obtn sm sec" data-a="meet" data-id="'+esc(id)+'">合流</button>':'')+(p&&(st==='menu'||st==='queue')?'<button class="obtn sm" data-a="inv" data-id="'+esc(id)+'">タイマン</button>':'')+'<button class="obtn sm sec" data-a="remf" data-id="'+esc(id)+'">削除</button>'); }).join(''):'<p class="hint">まだフレンドがいません。</p>';
+      $('of-out').innerHTML=F.outgoing.length?F.outgoing.map(function(id){ return card(id,'<button class="obtn sm sec" data-a="remf" data-id="'+esc(id)+'">取消</button>'); }).join(''):'<p class="hint">なし</p>';
+      const sug=[]; Net.players.forEach(function(p,id){ if(id!==Net.uid&&Prof.d.friends.indexOf(id)<0&&F.incoming.indexOf(id)<0) sug.push(id); }); Net.lobby.forEach(function(p){ const id=Net.pid(p); if(id&&!p.isMe&&Prof.d.friends.indexOf(id)<0&&sug.indexOf(id)<0) sug.push(id); });
+      $('of-sug').innerHTML=sug.length?sug.slice(0,8).map(function(id){ return card(id,'<button class="obtn sm" data-a="addf" data-id="'+esc(id)+'">＋追加</button>'); }).join(''):'<p class="hint">まだ他のプレイヤーが見つかりません。</p>';
+    }
+    else if(t==='rank'){
+      const arr=[]; Net.players.forEach(function(p,id){ arr.push({id:id,r:p.rating||1000,w:p.w||0,l:p.l||0,tot:p.tot||0}); });
+      if(Net.uid&&!Net.players.has(Net.uid)) arr.push({id:Net.uid,r:Prof.d.rating,w:Prof.d.w,l:Prof.d.l,tot:Prof.d.tot});
+      const k=this.sort, key=k==='rating'?'r':k; arr.sort(function(a,b){ return (b[key]-a[key])||(b.tot-a.tot); });
+      $('or-list').innerHTML=arr.length?arr.slice(0,40).map(function(e,i){ return '<div class="pl'+(e.id===Net.uid?' me':'')+'"><span class="rk">'+(i+1)+'</span>'+avatarOf(e.id)+'<div class="nm">'+esc(Net.nm(e.id))+'<small>'+e.w+'勝 '+e.l+'敗 ／ 累計 '+e.tot+'pt</small></div><b style="font:700 18px var(--f-display);color:var(--phos)">'+(k==='tot'?e.tot:k==='w'?e.w:e.r)+'</b></div>'; }).join(''):'<p class="hint">'+(on?'まだ記録がありません。':'オンラインに接続すると全体ランキングが表示されます。')+'</p>';
+    }
+    else if(t==='garage'){
+      $('og-pts').innerHTML='所持ポイント <b style="color:var(--amber)">'+Prof.d.pts+' pt</b>　／　累計 '+Prof.d.tot+' pt';
+      $('og-list').innerHTML=VEH.order.map(function(id){ const v=VEH[id], own=Prof.owns(id), eq=Prof.d.veh===id;
+        return '<div class="vc'+(eq?' eq':'')+'"><b>'+esc(v.name)+'</b><small>'+esc(v.kana)+'</small><div class="bars">'+bars(v)+'</div><small>'+esc(v.desc)+'</small>'+
+          (own?'<button class="obtn'+(eq?' sec':'')+'" data-a="equip" data-id="'+id+'"'+(eq?' disabled':'')+'>'+(eq?'装備中':'装備する')+'</button>':'<div class="price">'+v.price+' pt</div><button class="obtn" data-a="buy" data-id="'+id+'"'+(Prof.d.pts<v.price?' disabled':'')+'>'+(Prof.d.pts<v.price?'ポイント不足':'アンロック')+'</button>')+'</div>'; }).join('');
+    }
+    else if(t==='chat'){
+      const L=$('oc-log'); if(!L) return; const near=L.scrollTop+L.clientHeight>=L.scrollHeight-30;
+      L.innerHTML=Net.chat.length?Net.chat.map(function(c){ return '<div class="'+(c.me?'me':'')+'"><b>'+esc(Net.nm(c.by))+'</b>'+esc(c.text)+'</div>'; }).join(''):'<span class="hint">オンラインのプレイヤー全員に届きます。</span>'; if(near) L.scrollTop=L.scrollHeight;
+    }
+  },
+  act(a,id){
+    if(a==='q'){ if(Net.state!=='online'||!Net.room){ toast('オンラインに接続できません'); return; } Net.queue(!Net.qSince); }
+    else if(a==='host'){ if(Net.state!=='online'){ toast('オンラインに接続できません'); return; } const c=Net.hostCode(); toast('ルームコード: '+c+'（相手に伝えてください）',6000); }
+    else if(a==='join'){ if(Net.state!=='online'){ toast('オンラインに接続できません'); return; } Net.joinCode($('od-code').value); }
+    else if(a==='cpu') Net.startCpu(); else if(a==='sky') Net.startSky(null);
+    else if(a==='inv') Net.invite(id); else if(a==='meet') Net.startSky(id);
+    else if(a==='addf') Net.addFriend(id); else if(a==='remf') Net.removeFriend(id);
+    else if(a==='ign'){ if(Prof.d.ign.indexOf(id)<0) Prof.d.ign.push(id); Prof.save(); this.refresh(); }
+    else if(a==='sort'){ this.sort=id; this.refresh(); }
+    else if(a==='buy'){ if(Prof.buy(id)) toast(VEH[id].name+' をアンロックしました！',2600); this.refresh(); this.meCard(); }
+    else if(a==='equip'){ Prof.equip(id); this.refresh(); this.meCard(); }
+    else if(a==='say'){ const i=$('oc-in'); if(Net.say(i.value)) i.value=''; }
+  }
+};
+(function bindOnlineUI(){
+  $('ol-tabs').addEventListener('click',function(e){ const b=e.target.closest('button'); if(!b) return; OnlineUI.tab=b.dataset.t; OnlineUI.build(); });
+  $('ol-body').addEventListener('click',function(e){ const b=e.target.closest('[data-a]'); if(b&&!b.disabled) OnlineUI.act(b.dataset.a,b.dataset.id); });
+  $('ol-body').addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter'&&e.target.id==='oc-in') OnlineUI.act('say'); });
+  $('ol-body').addEventListener('input',function(e){
+    if(e.target.id!=='of-q') return; clearTimeout(OnlineUI.timer); const v=e.target.value.trim();
+    OnlineUI.timer=setTimeout(async function(){ const R=$('of-res'); if(!R) return; if(!v||!Net.user){ R.innerHTML=''; return; }
+      let hits=[]; try{ hits=await Net.user.search(v); }catch(e2){} hits=hits.filter(function(h){ return h.id&&h.id!==Net.uid; });
+      hits.forEach(function(h){ Net.names[h.id]=h.name||Net.names[h.id]; Net.avatars[h.id]=h.avatarUrl; });
+      R.innerHTML=hits.length?hits.map(function(h){ const f=Prof.d.friends.indexOf(h.id)>=0; return '<div class="pl">'+avatarOf(h.id)+'<div class="nm">'+esc(h.name)+'</div>'+(f?'<small>追加済み</small>':'<button class="obtn sm" data-a="addf" data-id="'+esc(h.id)+'">＋追加</button>')+'</div>'; }).join(''):'<p class="hint">見つかりませんでした。</p>'; },250);
+  });
+  $('ol-close').onclick=function(){ OnlineUI.close(); };
+  $('i-online').onclick=function(){ OnlineUI.open('duel'); }; $('i-garage').onclick=function(){ OnlineUI.open('garage'); };
+  // invitation bar
+  const upInv=function(){ const i=Net.inv; $('invbar').hidden=!i; if(i) $('inv-t').textContent=Net.nm(i.from)+' からタイマンの招待'; };
+  $('inv-ok').onclick=function(){ Net.acceptInv(); }; $('inv-no').onclick=function(){ Net.declineInv(); };
+  // in-game chat
+  const quick=['了解','援護頼む','右に敵','左に敵','ナイス！','GG','もう一戦！'];
+  $('chatq').innerHTML=quick.map(function(q){ return '<button data-q="'+q+'">'+q+'</button>'; }).join('');
+  const cpLog=function(){ const L=$('cp-log'); L.innerHTML=Net.chat.slice(-8).map(function(c){ return '<div class="'+(c.me?'me':'')+'"><b>'+esc(Net.nm(c.by))+'</b>'+esc(c.text)+'</div>'; }).join(''); L.scrollTop=L.scrollHeight; };
+  const sendCp=function(txt){ Net.say(txt,Duel.active&&!Duel.cpu); };
+  $('chatq').addEventListener('click',function(e){ const b=e.target.closest('button'); if(b) sendCp(b.dataset.q); });
+  $('cp-send').onclick=function(){ const i=$('cp-in'); sendCp(i.value); i.value=''; };
+  $('cp-in').addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter'){ sendCp(this.value); this.value=''; } });
+  $('cp-x').onclick=function(){ $('chatp').hidden=true; }; $('b-chat').onclick=function(){ $('chatp').hidden=!$('chatp').hidden; cpLog(); };
+  // pill on the briefing screen
+  const pill=function(){ const d=Prof.d; $('i-pill').innerHTML='◆ <b>'+d.pts+'</b> pt　レート <b>'+d.rating+'</b>　機体 <b>'+esc(VEH[d.veh].name)+'</b>　'+(Net.state==='online'?'<b style="color:#6fe07a">● ONLINE</b>':Net.state==='connecting'?'接続中…':'○ OFFLINE'); };
+  Prof.on(function(){ pill(); if(!$('online').hidden){ OnlineUI.meCard(); OnlineUI.refresh(); } });
+  let rt=0; Net.on(function(w){ if(w==='invite'||w==='state') upInv(); if(w==='state') pill(); if(w==='chat'&&!$('chatp').hidden) cpLog(); if(w==='duelwait'||w==='duel') return;
+    if(!$('online').hidden){ clearTimeout(rt); rt=setTimeout(function(){ OnlineUI.meCard(); OnlineUI.refresh(); },120); } });
+  setInterval(function(){
+    if(Net.inv&&Date.now()-Net.inv.ts>45000){ Net.inv=null; upInv(); }
+    const live=(Duel.active&&!Duel.cpu)||(Sky.active&&Net.state==='online'); $('b-chat').hidden=!live; if(!live) $('chatp').hidden=true;
+    const dh=$('duelhud'); dh.hidden=!(Duel.active&&Duel.phase!=='idle');
+    if(!dh.hidden){ const o=Duel.opp; $('dh-me').textContent=Net.uid?Net.nm(Net.uid):'あなた'; $('dh-op').textContent=o?o.name||'敵機':'待機中'; const oppK=Duel.cpu?Bot.d:(o?o.d:0); $('dh-sc').textContent=Duel.myK+' - '+oppK; $('dh-hp').style.width=(o&&o.al?clamp(o.hp,0,100):0)+'%'; }
+  },300);
+  const _sr=showResult; showResult=function(m,g,r){ _sr(m,g,r); $('r-free').hidden=Duel.active; $('r-retry').textContent=Duel.active?(Duel.cpu?'もう一度':'再戦'):'もう一度'; };
+  $('r-retry').onclick=function(){ if(Duel.active) Duel.rematch(); else Ops.start(O.idx); };
+  const _sp=setPause; setPause=function(v){ _sp(v); $('p-restart').hidden=Net.live(); };
+  pill();
+})();
 // initial scene: parked at the home pad, slow orbit behind the briefing
 setBrief(true); S.tod=17.4; S.weather='clear'; applySettings(); resetHeli(); S.started=false; updateWind(0); updateEnv(); syncButtons();
 requestAnimationFrame(frame);
-window.__sim={Foes:Foes,look:look,targets:targets,gates:gates,S:S,Ops:Ops,O:O,IN:IN,loads:loads,Hoist:Hoist,HND:HND,MISSIONS:MISSIONS,Q:Q,MARKS:function(){ return MARKS; },SITE:SITE,RESCUE:RESCUE,step:function(n){ for(let i=0;i<n;i++){ simStep(); if(i%12===0){ updateVisuals(STEP*12); } } updateHud(1); updateMarkers(); updateMaps(1); },groundY:groundY,terrainH:terrainH,wind:wind};
+window.__sim={Net:Net,Duel:Duel,Sky:Sky,Bot:Bot,Remotes:Remotes,OnlineUI:OnlineUI,VEH:VEH,setVehicle:setVehicle,Prof:Prof,Foes:Foes,look:look,targets:targets,gates:gates,S:S,Ops:Ops,O:O,IN:IN,loads:loads,Hoist:Hoist,HND:HND,MISSIONS:MISSIONS,Q:Q,MARKS:function(){ return MARKS; },SITE:SITE,RESCUE:RESCUE,step:function(n){ for(let i=0;i<n;i++){ simStep(); if(i%12===0){ updateVisuals(STEP*12); } } updateHud(1); updateMarkers(); updateMaps(1); },groundY:groundY,terrainH:terrainH,wind:wind};
 })();
 </script>
