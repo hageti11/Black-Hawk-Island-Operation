@@ -385,6 +385,7 @@ body:not(.touch) #actions{opacity:.9}
 'use strict';
 const PFX='uh60ja-v1-';
 let SES=null; try{ SES=JSON.parse(localStorage.getItem('uh60_session')||'null'); }catch(e){}
+if(SES&&!SES.pk8){ try{ SES.pk8=sessionStorage.getItem('uh60_pk8')||''; }catch(e){} }   // "remember" off: keep the key for this tab only instead of looping back to login
 if(SES&&SES.id&&SES.pn&&SES.pub&&SES.wk&&SES.pk8) window.__LSPFX=SES.id+'_'; else SES=null;
 const KP=window.__LSPFX||'';
 const LS={ get(k){ try{ return JSON.parse(localStorage.getItem(KP+k)); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(KP+k,JSON.stringify(v)); }catch(e){} } };
@@ -408,8 +409,8 @@ async function signBody(priv,o){ return b64(await CR.sign({name:'ECDSA',hash:'SH
 async function verifyBody(o){ try{ return await CR.verify({name:'ECDSA',hash:'SHA-256'},await impPub(o.pub),unb64(o.sg),TE.encode(canon(o))); }catch(e){ return false; } }
 let PRIV=null, ME=null;
 if(SES) ME={id:SES.id,name:SES.nm,pn:SES.pn,gh:SES.gh||'',pub:SES.pub,wk:SES.wk,reg:SES.reg};
-function saveSession(a,privPkcs8,remember){ try{ localStorage.setItem('uh60_session',JSON.stringify({id:a.id,pn:a.pn,nm:a.name,gh:a.gh||'',pub:a.pub,wk:a.wk,reg:a.reg,pk8:remember?b64(privPkcs8):''})); }catch(e){} }
-function logout(){ try{ localStorage.removeItem('uh60_session'); }catch(e){} location.reload(); }
+function saveSession(a,privPkcs8,remember){ try{ localStorage.setItem('uh60_session',JSON.stringify({id:a.id,pn:a.pn,nm:a.name,gh:a.gh||'',pub:a.pub,wk:a.wk,reg:a.reg,pk8:remember?b64(privPkcs8):''})); }catch(e){} try{ if(remember) sessionStorage.removeItem('uh60_pk8'); else sessionStorage.setItem('uh60_pk8',b64(privPkcs8)); }catch(e){} }
+function logout(){ try{ localStorage.removeItem('uh60_session'); sessionStorage.removeItem('uh60_pk8'); }catch(e){} location.reload(); }
 let loginP=null;
 async function resumeKey(){ if(PRIV) return; if(SES&&SES.pk8){ try{ PRIV=await impPriv(unb64(SES.pk8)); }catch(e){} } }
 function loginUi(){
@@ -449,7 +450,7 @@ function loginUi(){
         if(mode==='up'){
           if(pw!==q('#lg-p2').value){ q('#lg-e').style.color='#ff9a8d'; err('確認用パスワードが一致しません'); return; }
           const dn=(q('#lg-d').value.trim()||pn).slice(0,16); let gh=q('#lg-g').value.trim().replace(/^@/,''); if(!/^[A-Za-z0-9-]{1,39}$/.test(gh)) gh='';
-          ME={id:id,pn:pn}; q('#lg-e').textContent='サーバーに問い合わせ中…'; const online=await MQ.waitOk(6000); const exist=online?await fetchAccount(id):null;
+          ME={id:id,pn:pn}; q('#lg-e').textContent='サーバーに問い合わせ中…'; const online=await MQ.waitOk(6000); if(!online){ q('#lg-e').style.color='#ff9a8d'; err('サーバーに接続できないため新規登録できません（既存データの上書き防止）。接続後にもう一度お試しください'); return; } const exist=await fetchAccount(id);
           if(exist){ q('#lg-e').style.color='#ff9a8d'; err('そのプレイヤー名はすでに使われています'); return; }
           const kp=await CR.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
           const pkcs8=await CR.exportKey('pkcs8',kp.privateKey), pub=b64(await CR.exportKey('raw',kp.publicKey)), wk=await sealPriv(pw,pkcs8);
@@ -460,7 +461,7 @@ function loginUi(){
           if(!rec){ ME={id:id,pn:pn}; q('#lg-e').textContent='サーバーからアカウントを取得中…'; const online=await MQ.waitOk(7000); if(!online){ q('#lg-e').style.color='#ff9a8d'; err('サーバーに接続できません。通信環境を確認するか、登録した端末でお試しください'); return; } rec=await fetchAccount(id); }
           if(!rec||!rec.wk||!rec.pub){ q('#lg-e').style.color='#ff9a8d'; err('アカウントが見つかりません。プレイヤー名を確認するか、新規登録してください'); return; }
           let pkcs8; try{ pkcs8=await openPriv(pw,rec.wk); }catch(x){ q('#lg-e').style.color='#ff9a8d'; err('パスワードが違います'); return; }
-          PRIV=await impPriv(pkcs8); const a={id:id,pn:pn,name:rec.nm||pn,gh:rec.gh||'',pub:rec.pub,wk:rec.wk,reg:rec.reg||0};
+          PRIV=await impPriv(pkcs8); const a={id:id,pn:pn,name:rec.nm||pn,gh:rec.gh||'',pub:rec.pub,wk:rec.wk,reg:rec.reg||0}; try{ if(rec.sg) localStorage.setItem('uh60_full_'+id,JSON.stringify(rec)); }catch(x){}
           saveSession(a,pkcs8,rem); ME=a; box.remove(); res(a);
         }
       }catch(x){ console.error(x); q('#lg-e').style.color='#ff9a8d'; err('エラー: '+(x&&x.message||x)); }
@@ -475,7 +476,9 @@ function login(){
 if(!SES){ const go=function(){ login(); }; if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go(); }
 
 /* ---------- player database (local cache + signed gossip) ---------- */
-const PL=(function(){ const o=LS.get('uh60_players'); return (o&&typeof o==='object')?o:{}; })();
+const PL=(function(){ let o=LS.get('uh60_players'); if(!o||typeof o!=='object') o={};
+  try{ if(SES){ const f=JSON.parse(localStorage.getItem('uh60_full_'+SES.id)||'null'); if(f&&f.sg&&(!o[SES.id]||(o[SES.id].ms||0)<(f.ms||0))) o[SES.id]=f; } }catch(e){}
+  return o; })();
 const plSubs=[]; let plT=0;
 function plSave(){ clearTimeout(plT); plT=setTimeout(function(){ LS.set('uh60_players',PL); },400); }
 function plNotify(){ plSubs.forEach(function(f){ try{ f(snapshot()); }catch(e){} }); }
@@ -495,7 +498,7 @@ function clean(d){
 async function accept(id,d){
   if(!CR||!id||typeof id!=='string'||id.length>40) return false; const c=clean(d); if(!c||!c.sg||!c.pub||!c.pn||!c.wk) return false;
   try{ if(id!==await idOf(c.pn)) return false; }catch(e){ return false; }
-  if(ME&&id===ME.id&&ME.pub&&c.pub!==ME.pub){ conflict(); return false; } const old=PL[id]; if(old&&old.pub&&old.pub!==c.pub) return false; if(old&&(old.ms||0)>=(c.ms||0)) return false;
+  if(ME&&id===ME.id&&ME.pub&&c.pub!==ME.pub){ conflict(); return false; } if(ME&&id===ME.id&&window.__mergeOwn&&(await verifyBody(c))){ try{ window.__mergeOwn(c); }catch(e){} } const old=PL[id]; if(old&&old.pub&&old.pub!==c.pub) return false; if(old&&(old.ms||0)>=(c.ms||0)) return false;
   if(!(await verifyBody(c))) return false;
   PL[id]=c; plSave(); try{ localStorage.setItem('uh60_acct_'+id,JSON.stringify({nm:c.nm,gh:c.gh,pub:c.pub,wk:c.wk,reg:c.reg})); }catch(e){} plNotify(); return true;
 }
@@ -604,7 +607,9 @@ async function publishNew(a,pw){
   MQ.pub(acctTopic(a.id),JSON.stringify(c),true); PL[a.id]=c; plSave();
 }
 let acctSub=false;
-function startAccounts(){ if(acctSub) return; acctSub=true; MQ.sub(NS+'acct/+',function(t,p){ if(!p) return; const id=t.slice(t.lastIndexOf('/')+1); try{ accept(id,JSON.parse(p)); }catch(e){} }); }
+function startAccounts(){ if(acctSub) return; acctSub=true; MQ.sub(NS+'acct/+',function(t,p){ if(!p) return; const id=t.slice(t.lastIndexOf('/')+1); try{ accept(id,JSON.parse(p)); }catch(e){} });
+  const rep=function(){ if(ME&&PL[ME.id]&&PL[ME.id].sg&&MQ.ok) MQ.pub(acctTopic(ME.id),JSON.stringify(PL[ME.id]),true); };
+  setInterval(rep,120000); MQ.onStatus(function(s){ if(s.ok) setTimeout(rep,4000); }); }
 
 /* ---------- rooms: presence + events multiplexed over the single MQTT connection ---------- */
 function makeRoom(name,isLobby){
@@ -644,7 +649,7 @@ function makeRoom(name,isLobby){
 let lobby=null;
 async function lobbyRoom(){ await login(); if(lobby) return lobby; startAccounts(); lobby=makeRoom(lobbyName(),true); return lobby; }
 
-window.__logout=logout;
+window.__logout=logout; window.__fetchOwn=function(){ return ME?fetchAccount(ME.id):Promise.resolve(null); }; window.__mqWaitOk=function(ms){ return MQ.waitOk(ms); };
 window.claude={ async use(name){
   if(name==='user') return userShim;
   if(name==='db'){ await login(); startAccounts(); return dbShim; }
@@ -718,14 +723,18 @@ const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints>0) || (
 function failMsg(t){ const s=$('intro').querySelector('.sheet'); s.insertAdjacentHTML('afterbegin','<p style="color:#ff5a4a;font-weight:700">'+t+'</p>'); const b=$('start-simulation'); if(b) b.disabled=true; }
 if(!window.THREE){ failMsg('three.js を読み込めませんでした。接続を確認して再読み込みしてください。'); return; }
 const SETTINGS = {quality:'auto',sens:100,vol:80,hud:1,swap:0,voice:0,pod:'none',best:{}};
-try{ const o=JSON.parse(localStorage.getItem((window.__LSPFX||'')+'uh60ja.v2')||'{}'); for(const k in o) SETTINGS[k]=o[k]; }catch(e){}
+try{ const P=window.__LSPFX||''; let raw=localStorage.getItem(P+'uh60ja.v2');
+  if(!raw&&P&&!localStorage.getItem('uh60ja.adopted')){ const lg=localStorage.getItem('uh60ja.v2'); try{ const lo=JSON.parse(lg||'null'); if(lo&&lo.prof&&(lo.prof.tot>200||(lo.prof.friends||[]).length)){ raw=lg; localStorage.setItem('uh60ja.adopted',P); } }catch(e){} }   // pre-account progress follows the first account on this device
+  const o=JSON.parse(raw||'{}'); for(const k in o) SETTINGS[k]=o[k];
+  const bk=JSON.parse(localStorage.getItem(P+'uh60ja.bak')||'null'); if(bk&&bk.d&&bk.d.tot>((SETTINGS.prof&&SETTINGS.prof.tot)||0)) SETTINGS.prof=bk.d;
+}catch(e){}
 function saveStore(){ try{ localStorage.setItem((window.__LSPFX||'')+'uh60ja.v2',JSON.stringify(SETTINGS)); }catch(e){} }
 const Prof={
   d:Object.assign({pts:200,tot:200,rating:1000,w:0,l:0,k:0,dth:0,unlocked:['uh60ja'],veh:'uh60ja',friends:[],ign:[],hist:[],ms:0},SETTINGS.prof||{}),
   listeners:[],
   on(fn){ this.listeners.push(fn); },
   fire(){ this.listeners.forEach(function(f){ try{ f(); }catch(e){} }); },
-  save(){ SETTINGS.prof=this.d; saveStore(); this.fire(); },
+  save(){ SETTINGS.prof=this.d; saveStore(); try{ localStorage.setItem((window.__LSPFX||'')+'uh60ja.bak',JSON.stringify({t:Date.now(),d:this.d})); }catch(e){} this.fire(); },
   award(n){ n=Math.max(0,Math.round(n)); this.d.pts+=n; this.d.tot+=n; this.save(); return n; },
   owns(id){ return this.d.unlocked.indexOf(id)>=0; },
   buy(id){ const v=VEH[id]; if(!v||this.owns(id)||this.d.pts<v.price) return false; this.d.pts-=v.price; this.d.unlocked.push(id); this.d.veh=id; this.save(); return true; },
@@ -1226,8 +1235,18 @@ function fuseColor(x,y,z,style){
   const n=.012*Math.sin(x*9+z*3.1)+.01*Math.sin(z*5.3);                // faint panel variation
   return [.215+n,.265+n,.14+n];
 }
+function loftSub(st,k){
+  if(!k||st.length<3) return st;
+  const out=[], keys=['z','hw','yt','yb','n'];
+  const cr=function(a,b,c,d,t){ return .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t); };
+  for(let i=0;i<st.length-1;i++){
+    const p0=st[Math.max(0,i-1)], p1=st[i], p2=st[i+1], p3=st[Math.min(st.length-1,i+2)];
+    for(let q=0;q<k;q++){ const t=q/k, o={}; keys.forEach(function(key){ o[key]=cr(p0[key],p1[key],p2[key],p3[key],t); }); o.hw=Math.max(.04,o.hw); o.n=Math.max(1.6,o.n); if(o.yt<o.yb+.05) o.yt=o.yb+.05; out.push(o); }
+  }
+  out.push(st[st.length-1]); return out;
+}
 function loftGeo(st,seg,colFn){
-  colFn=colFn||fuseColor;
+  colFn=colFn||fuseColor; st=loftSub(st,2); seg=Math.max(seg,28);
   const pos=[],col=[],idx=[],ns=st.length;
   for(let i=0;i<ns;i++){
     const s=st[i], yc=(s.yt+s.yb)/2, hh=(s.yt-s.yb)/2, ex=2/s.n;
@@ -1251,6 +1270,18 @@ HM.orange=HMR.orange;
 const HOIST_ANCHOR=new THREE.Vector3(-2.2,3.0,-.45), SLING_ANCHOR=new THREE.Vector3(0,.95,-.2);
 const tipGeo=new THREE.BoxGeometry(.6,.05,.535), bladeGeo=new THREE.BoxGeometry(7.7,.045,.53);
 const sprGlow=function(c,sz){ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:puffTex,color:c,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})); s.scale.set(sz,sz,1); return s; };
+
+
+function addBlade(piv,x0,rad,chord,tipMat,parked){
+  const span=rad-x0, L1=span*.74, L2=span-L1-.42;
+  const a=new THREE.Mesh(new THREE.BoxGeometry(L1,.05,chord),HM.dark); a.position.x=x0+L1/2; a.castShadow=!parked; piv.add(a);
+  const b=new THREE.Mesh(new THREE.BoxGeometry(L2,.04,chord*.88),HM.dark); b.position.set(x0+L1+L2/2,-.003,.01); b.rotation.x=.012; piv.add(b);
+  const tp=new THREE.Mesh(new THREE.BoxGeometry(.42,.04,chord*.9),tipMat||HM.yellow); tp.position.set(rad-.21,-.006,.04); tp.rotation.y=-.2; piv.add(tp);
+  const le=new THREE.Mesh(new THREE.BoxGeometry(span-.15,.02,.04),HM.steel); le.position.set(x0+(span-.15)/2,.003,chord/2); piv.add(le);
+  const te=new THREE.Mesh(new THREE.BoxGeometry(span-.4,.015,.05),HM.rubber); te.position.set(x0+(span-.4)/2,-.004,-chord/2); piv.add(te);
+  const st=new THREE.Mesh(new THREE.BoxGeometry(.2,.052,chord*.96),HM.red); st.position.set(rad-.85,.001,0); piv.add(st);
+  const tab=new THREE.Mesh(new THREE.BoxGeometry(.9,.02,.1),HM.yellow); tab.position.set(x0+span*.82,.0,-chord/2-.02); piv.add(tab);
+}
 
 function buildUH60(parked,style){
   const resc=style==='rescue', M=resc?HMR:HM;
@@ -1341,6 +1372,22 @@ function buildUH60(parked,style){
     B.add(cy(.015,.015,.5,5),'metal',[x*.55,1.8,2.9],[.25,0,0]);
   });
   if(resc){ B.add(bx(.5,.35,.7),'steel',[0,1.0,4.0]); B.add(bx(1.0,.06,.5),'orange',[0,3.28,-8.9]); [1,-1].forEach(function(s){ B.add(bx(.012,.34,1.2),'orange',[s*1.2,2.7,2.2]); }); B.add(cy(.3,.3,.4,12),'steel',[-.85,1.12,3.55],[HP,0,0]); }
+  // ---- v6 detail pass ----
+  B.add(bx(.4,.2,.5),'dark',[0,.98,-.2]); B.add(cy(.05,.05,.3,8),'steel',[0,.84,-.2]);                       // cargo-hook fairing
+  B.add(bx(.5,.1,1.0),'dark',[0,2.34,-5.5]);                                                                   // Doppler radome
+  B.add(cy(.012,.012,.55,4),'metal',[.1,3.72,-3.2],[0,0,.2]); B.add(cy(.012,.012,.7,4),'metal',[-.12,3.7,-5.1],[0,0,-.18]); B.add(cy(.012,.012,.5,4),'metal',[0,3.6,-6.3],[.2,0,0]);
+  B.add(new THREE.SphereGeometry(.2,10,8,0,Math.PI*2,0,HP),'olive2',[0,2.1,4.62],[HP,0,0]);                       // nose radome
+  for(let i=0;i<6;i++) B.add(bx(.46,.02,.05),'dark',[0,3.22+i*.012,-5.6-i*.5]);                                // tail-boom ribs
+  [1,-1].forEach(function(s){
+    B.add(bx(.04,.08,.18),'steel',[s*.44,3.05,-6.2]); B.add(bx(.04,.08,.18),'steel',[s*.4,3.0,-7.4]);        // boom handholds
+    B.add(bx(.14,.5,.9),'olive2',[s*.4,3.5,-8.7],[0,0,s*.1]);                                                // tail-rotor pylon fairing
+    B.add(bx(.04,.3,.5),'steel',[s*2.0,3.78,-1.0]);                                                          // cowl hinge / latch
+    B.add(cy(.1,.1,.04,10),'steel',[s*1.21,1.18,3.0],[0,0,HP]);                                              // window latch
+    B.add(bx(.03,.2,.7),'dark',[s*.62,3.2,.55]); B.add(cy(.07,.07,.04,8),'steel',[s*.62,3.98,-.1]);       // intake lip + fuel cap
+    B.add(cy(.045,.045,.05,8),'visor',[s*.85,1.1,4.05],[HP,0,0]);                                            // landing lamp lens
+    B.add(bx(.3,.05,.5),'metal',[s*1.34,1.22,1.55]); B.add(bx(.3,.05,.5),'metal',[s*1.34,1.22,-2.35]);       // access steps
+  });
+  B.add(bx(1.1,.04,.5),'dark',[0,3.7,.3]); B.add(cy(.045,.045,.3,8),'dark',[0,2.0,1.0],[0,0,HP]);
   B.build(M,g,true,true);
 
   // cockpit displays (basic emissive panels, visible from the cockpit camera)
@@ -1361,12 +1408,10 @@ function buildUH60(parked,style){
   P.rotorSpin=new THREE.Group(); rg.add(P.rotorSpin);
   for(let i=0;i<4;i++){
     const piv=new THREE.Group(); piv.rotation.y=i*HP; piv.rotation.z=parked?-.06:.035;
-    const bl=new THREE.Mesh(bladeGeo,HM.dark); bl.position.x=4.4; bl.castShadow=!parked; piv.add(bl);
+    addBlade(piv,.6,8.2,.53,HM.yellow,parked);
     const cuff=new THREE.Mesh(bgeo(1.1,.14,.4),HM.olive2); cuff.position.x=.95; piv.add(cuff);
     const brg=new THREE.Mesh(bgeo(.34,.3,.34),HM.rubber); brg.position.x=.5; brg.position.y=-.04; piv.add(brg);
     const link=new THREE.Mesh(cy(.02,.02,.5,5),HM.steel); link.position.set(.7,-.28,.18); link.rotation.z=.15; piv.add(link);
-    const tab=new THREE.Mesh(bgeo(.9,.02,.1),HM.yellow); tab.position.set(7.35,.0,-.28); piv.add(tab);
-    const tip=new THREE.Mesh(tipGeo,HM.yellow); tip.position.x=7.95; piv.add(tip);
     P.rotorSpin.add(piv);
   }
   P.rotorDisc=new THREE.Mesh(new THREE.CircleGeometry(8.2,48).rotateX(-HP),new THREE.MeshBasicMaterial({color:0x1b1b1b,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); rg.add(P.rotorDisc);
@@ -1451,18 +1496,11 @@ function rotorHead(P,g,y,z,rad,blades,parked,tipMat){
   P.rotorSpin=new THREE.Group(); rg.add(P.rotorSpin);
   const hubTop=new THREE.Mesh(new THREE.CylinderGeometry(.2,.26,.12,14),HM.steel); hubTop.position.y=.2; rg.add(hubTop);
   const sc=new THREE.Mesh(new THREE.CylinderGeometry(.5,.46,.1,16),HM.dark); sc.position.y=-.18; rg.add(sc);       // swashplate
-  const L1=rad*.74, L2=rad-.7-L1-.42;
-  const gIn=new THREE.BoxGeometry(L1,.05,.52), gOut=new THREE.BoxGeometry(L2,.04,.45), gTip=new THREE.BoxGeometry(.42,.04,.47), gLE=new THREE.BoxGeometry(rad-.85,.02,.04), gTE=new THREE.BoxGeometry(rad-1.1,.015,.05), gStripe=new THREE.BoxGeometry(.2,.052,.5);
   for(let i=0;i<blades;i++){
     const piv=new THREE.Group(); piv.rotation.y=i*Math.PI*2/blades; piv.rotation.z=parked?-.06:.035;
-    const a=new THREE.Mesh(gIn,HM.dark); a.position.x=.7+L1/2; a.castShadow=!parked; piv.add(a);
-    const b=new THREE.Mesh(gOut,HM.dark); b.position.set(.7+L1+L2/2,-.003,.01); b.rotation.x=.012; piv.add(b);
-    const tp=new THREE.Mesh(gTip,tipMat||HM.yellow); tp.position.set(rad-.21,-.006,.04); tp.rotation.y=-.2; piv.add(tp);
-    const le=new THREE.Mesh(gLE,HM.steel); le.position.set(.7+(rad-.85)/2,.003,.255); piv.add(le);                          // abrasion strip
-    const te=new THREE.Mesh(gTE,HM.rubber); te.position.set(.7+(rad-1.1)/2,-.004,-.26); piv.add(te);                         // trailing tab
-    const st=new THREE.Mesh(gStripe,HM.red); st.position.set(rad-.85,.001,.0); piv.add(st);                                 // tip stripe
-    const cf=new THREE.Mesh(bgeo(.8,.14,.36),HM.steel); cf.position.x=.5; piv.add(cf);                                       // root cuff
-    const pl=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.34,6),HM.metal); pl.position.set(.38,-.16,.12); piv.add(pl);  // pitch link
+    addBlade(piv,.7,rad,.5,tipMat,parked);
+    const cf=new THREE.Mesh(bgeo(.8,.14,.36),HM.steel); cf.position.x=.5; piv.add(cf);
+    const pl=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.34,6),HM.metal); pl.position.set(.38,-.16,.12); piv.add(pl);
     P.rotorSpin.add(piv);
   }
   P.rotorDisc=new THREE.Mesh(new THREE.CircleGeometry(rad+.2,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x1b1b1b,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false})); rg.add(P.rotorDisc);
@@ -1484,8 +1522,7 @@ function decal(g,txt,w,h,x,y,z,side,col,font){
   m.position.set(x,y,z); m.rotation.y=side*Math.PI/2; g.add(m); return m;
 }
 function addDecals(g,vid){
-  const D={uh60ja:[[-5.2,2.35,.5,'陸上自衛隊',1.5,.3],[-6.4,2.05,.5,'41802',.9,.22]],uh60j:[[-5.2,2.35,.5,'航空自衛隊',1.5,.3],[-6.4,2.05,.5,'救難',.9,.22]],
-    ah64:[[-5.6,3.02,.45,'陸上自衛隊',1.3,.26],[-6.8,2.76,.35,'73501',.8,.2]],oh1:[[-3.6,2.6,.5,'陸上自衛隊',1.0,.22],[-4.6,2.4,.4,'32501',.6,.17]]}[vid]||[];
+  const D={ah64:[[-5.6,3.02,.45,'陸上自衛隊',1.3,.26],[-6.8,2.76,.35,'73501',.8,.2]],oh1:[[-3.6,2.6,.5,'陸上自衛隊',1.0,.22],[-4.6,2.4,.4,'32501',.6,.17]]}[vid]||[];
   D.forEach(function(d){ [1,-1].forEach(function(s){ decal(g,d[3],d[4],d[5],s*d[2],d[1],d[0],s,'rgba(235,235,225,.9)'); }); });
 }
 function detailAH(B,cy,bx,HP){
@@ -1599,9 +1636,18 @@ function buildOH1(parked){
   heliCommon(P,g,{mz:[0,.95,4.4],wing:1.95,wy:1.9,wz:.2,fin:4.3,tail:6.8,parked:parked});
   return P;
 }
+function addRappelGear(g){
+  const m=new THREE.MeshStandardMaterial({color:0x2a3322,roughness:.7,metalness:.45}), rp=new THREE.MeshStandardMaterial({color:0x6a6a52,roughness:.95});
+  [-1,1].forEach(function(s){
+    const bar=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.1,8),m); bar.rotation.z=Math.PI/2; bar.position.set(s*1.5,1.78,-.5); bar.castShadow=true; g.add(bar);   // rappel bar
+    const bag=new THREE.Mesh(new THREE.BoxGeometry(.34,.26,.5),rp); bag.position.set(s*1.0,1.5,-.5); g.add(bag);                                                    // rope bag
+    const eye=new THREE.Mesh(new THREE.TorusGeometry(.08,.02,6,10),m); eye.position.set(s*2.05,1.78,-.5); eye.rotation.y=Math.PI/2; g.add(eye);                       // anchor ring
+  });
+}
 function buildHeliModel(parked,vid){
   let P; if(vid==='ah64') P=buildAH64(parked); else if(vid==='oh1') P=buildOH1(parked); else P=buildUH60(parked,vid==='uh60j'?'rescue':'');
   try{ addDecals(P.g,vid||'uh60ja'); }catch(e){ console.warn('decals',e); }
+  if(vid!=='oh1'&&vid!=='ah64'){ try{ addRappelGear(P.g); }catch(e){ console.warn('rappel gear',e); } }
   return P;
 }
 
@@ -1856,12 +1902,13 @@ function makeSoldier(idx){
   const g=new THREE.Group(), J={};
   const part=function(geo,mat,x,y,z,par){ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.castShadow=true; (par||g).add(m); return m; };
   const grp=function(x,y,z,par){ const o=new THREE.Group(); o.position.set(x,y,z); (par||g).add(o); return o; };
+  const cyg=function(r0,r1,h){ return new THREE.CylinderGeometry(r0,r1,h,8); };
   const hips=grp(0,.95,0); J.hips=hips;
   part(bgeo(.34,.2,.2),SM.uni2,0,0,0,hips);
   [-1,1].forEach(function(s){
     const th=grp(s*.1,-.04,0,hips), kn=grp(0,-.43,0,th);
-    part(bgeo(.16,.45,.18),SM.uni2,0,-.21,0,th); part(bgeo(.1,.14,.08),SM.vest,s*.0,-.17,.095,th);   // thigh + knee-side pocket
-    part(bgeo(.13,.43,.14),SM.uni2,0,-.2,0,kn); part(bgeo(.15,.1,.3),SM.boot,0,-.44,.06,kn); part(bgeo(.14,.12,.14),SM.boot,0,-.38,-.0,kn);
+    part(cyg(.085,.07,.45),SM.uni2,0,-.21,0,th); part(bgeo(.1,.14,.08),SM.vest,s*.0,-.17,.095,th);   // thigh + knee-side pocket
+    part(cyg(.07,.055,.43),SM.uni2,0,-.2,0,kn); part(bgeo(.15,.1,.3),SM.boot,0,-.44,.06,kn); part(bgeo(.14,.12,.14),SM.boot,0,-.38,-.0,kn);
     part(bgeo(.17,.07,.17),SM.vest,0,-.03,.02,kn);                                                // knee pad
     J['th'+(s<0?'L':'R')]=th; J['kn'+(s<0?'L':'R')]=kn;
   });
@@ -1882,12 +1929,18 @@ function makeSoldier(idx){
   part(bgeo(.2,.02,.02),SM.tape,0,.04,.145,head);                                                 // ident band
   [-1,1].forEach(function(s){
     const sh=grp(s*.26,.5,0,torso), el=grp(0,-.29,0,sh);
-    part(bgeo(.11,.3,.11),SM.uni,0,-.14,0,sh); part(bgeo(.095,.28,.095),SM.uni,0,-.14,0,el); part(bgeo(.1,.09,.11),SM.glove,0,-.3,0,el);
+    part(cyg(.06,.052,.3),SM.uni,0,-.14,0,sh); part(cyg(.052,.045,.28),SM.uni,0,-.14,0,el); part(bgeo(.1,.09,.11),SM.glove,0,-.3,0,el);
     J['sh'+(s<0?'L':'R')]=sh; J['el'+(s<0?'L':'R')]=el;
   });
   // rifle (Type 89 style) carried on the chest sling
   const rf=grp(0,.32,.2,torso); J.rifle=rf;
   part(bgeo(.05,.09,.62),SM.gun,0,0,.18,rf); part(bgeo(.05,.05,.3),SM.gun,0,.01,.6,rf); part(bgeo(.045,.16,.07),SM.gun,0,-.11,.12,rf); part(bgeo(.05,.1,.22),SM.gun,0,-.02,-.2,rf);
+  part(bgeo(.1,.12,.08),SM.gun,0,-.02,.13,hips); part(bgeo(.04,.1,.04),SM.glove,0,.1,.15,hips);          // descender + carabiner on the harness
+  [-1,1].forEach(function(s){ part(bgeo(.05,.34,.05),SM.tape,s*.12,-.12,0,hips); });                    // harness leg loops
+  const role=['leader','rifle','gunner','medic'][(idx||0)%4]; g.userData.role=role;
+  if(role==='leader'){ part(bgeo(.02,.5,.02),SM.gun,-.14,.6,-.24,torso); part(bgeo(.2,.14,.08),SM.pack,0,.46,.17,torso); }          // radio whip + map case
+  else if(role==='gunner'){ part(bgeo(.06,.12,.5),SM.gun,0,.1,.25,rf); part(bgeo(.2,.18,.12),SM.pack,0,.1,0,rf); }                   // light MG + ammo box
+  else if(role==='medic'){ part(bgeo(.34,.34,.2),SM.tape,0,.34,-.34,torso); part(bgeo(.12,.12,.02),SM.vest,0,.34,-.45,torso); }    // aid bag with marker
   J.ph=idx*1.7; g.userData.J=J; return g;
 }
 const POSE={
@@ -1930,18 +1983,24 @@ function deployTroop(){
 }
 function troopSlot(t){ const n=Math.max(1,troopsA.length); const a=S.yaw+Math.PI*.5+t.slot*(Math.PI*2/8)+(t.side<0?0:.2); const d=11+(t.slot%2)*5; return {x:t.base.x+Math.sin(a)*d, z:t.base.z+Math.cos(a)*d, a:a}; }
 function updateTroops(dt){
-  S.rappelCD=Math.max(0,S.rappelCD-dt);
+  S.rappelCD=Math.max(0,S.rappelCD-dt); S.ropeWarn=Math.max(0,(S.ropeWarn||0)-dt);
   const used=[false,false];
   for(let i=0;i<troopsA.length;i++){
     const t=troopsA[i], g=t.g, gy=groundY(g.position.x,g.position.z); t.t+=dt;
     const si=t.side<0?0:1;
     if(t.mode==='exit'||t.mode==='rope'){
       used[si]=true; const a=ropeAnchor(t.side,tmpA);
-      g.position.x+=(a.x-g.position.x)*Math.min(1,dt*9); g.position.z+=(a.z-g.position.z)*Math.min(1,dt*9);
+      if(t.mode==='rope'){   // pendulum on the rope: pushed by wind and by the aircraft's own motion
+        const hh=Math.max(2,a.y-g.position.y), w2=G/hh; t.sx=t.sx||0; t.sz=t.sz||0; t.svx=t.svx||0; t.svz=t.svz||0;
+        t.svx+=(-w2*t.sx+(wind.x*.05-S.vel.x*.35)-1.5*t.svx)*dt; t.svz+=(-w2*t.sz+(wind.z*.05-S.vel.z*.35)-1.5*t.svz)*dt;
+        t.sx=clamp(t.sx+t.svx*dt,-1.8,1.8); t.sz=clamp(t.sz+t.svz*dt,-1.8,1.8); g.position.x=a.x+t.sx; g.position.z=a.z+t.sz;
+        const hsK=Math.hypot(S.vel.x,S.vel.z)*KT; if(hsK>14&&S.ropeWarn<=0){ S.ropeWarn=3; toast('降下中！ホバリングを維持してください',1400); }
+      } else { g.position.x+=(a.x-g.position.x)*Math.min(1,dt*9); g.position.z+=(a.z-g.position.z)*Math.min(1,dt*9); }
       g.rotation.y=S.yaw+(t.side<0?-Math.PI/2:Math.PI/2);          // face the open door side while sliding
       if(t.mode==='exit'){ posePerson(g,t.t<.25?'exit':'slide',0); if(t.t>.45){ t.mode='rope'; t.t=0; } continue; }
       const h=g.position.y-gy;
-      t.v=Math.min(t.v+7*dt,Math.min(6.2,Math.max(1.3,h*1.7)));
+      const vmax=({leader:5.4,rifle:6.2,gunner:5.0,medic:5.2})[g.userData.role]||6.2, cap=Math.min(vmax,Math.max(1.3,h*1.7))*(1-.3*clamp(Math.hypot(S.vel.x,S.vel.z)/8,0,1));
+      t.v=Math.min(t.v+7*dt,cap);
       g.position.y-=t.v*dt; posePerson(g,'slide',0);
       if(g.position.y<=gy+.02){ g.position.y=gy; t.mode='land'; t.t=0; t.base=g.position.clone(); ropeT[si]=Math.max(ropeT[si],1.5);
         for(let k=0;k<3;k++) spawnFx({pos:new THREE.Vector3(g.position.x,gy+.3,g.position.z),vel:new THREE.Vector3(rnd(-2,2),rnd(.4,1.6),rnd(-2,2)),s0:.8,s1:3.4,life:1.1,color:0xb9ab8c,op:.5}); }
@@ -2021,6 +2080,7 @@ function physics(dt){
   const sp=Math.hypot(S.vel.x,S.vel.z);
   let yr=IN.ped*1.1*VC.yaw*(.25+.75*tf);
   if(!S.assist) yr+=(S.coll-.5)*.4*tf;
+  if(!S.assist&&!onG){ const ws=Math.hypot(wind.x,wind.z); if(ws>2) yr-=angDiff(Math.atan2(-wind.x,-wind.z),S.yaw)*.05*smooth(2,8,ws)*(1-smooth(5,14,sp)); }   // weathercock: nose swings into the wind
   yr+=Math.tan(S.roll)*G/Math.max(sp,14)*.55*smooth(4,14,sp);
   S.yawRate+=(yr-S.yawRate)*(1-Math.exp(-dt*4));
   S.yaw-=S.yawRate*dt;
@@ -2037,6 +2097,10 @@ function physics(dt){
     Tn=G*(.18+1.64*S.coll)*(1+.16*clamp(1-agl/14,0,1));
   }
   Tn*=1+.07*smooth(0,12,sp);
+  Tn*=1-clamp(S.pos.y,0,3000)*.000045;                       // density altitude: thinner air at height
+  Tn*=1-.14*smooth(68,96,sp);                                 // retreating-blade stall near Vne
+  { const vrs=smooth(3.5,7.5,-S.vel.y)*(1-smooth(5,15,sp))*smooth(8,20,agl)*(S.assist?(IN.climb>.15?1:.35):smooth(.45,.8,S.coll));   // vortex ring state: fast sink, low airspeed, power on
+    if(vrs>.05){ Tn*=1-.38*vrs; if(vrs>.5&&!S.vrsMsg){ S.vrsMsg=true; toast('渦輪状態(VRS)！前進速度をつけて降下率を下げてください',2600); setTimeout(function(){ S.vrsMsg=false; },5000); } } }
   Tn=clamp(Tn,0,G*1.65*VC.pw);
   if(S.engineOut) Tn=Math.min(Tn,G*.9);
   Tn*=tf;
@@ -3416,7 +3480,7 @@ function updateVisuals(dt){
 /* ===================== main loop ===================== */
 function simStep(){
   readInput(STEP); updateWind(S.time+S.tod*100);
-  if(!S.crashed){ loadStep(STEP); physics(STEP); }
+  if(!S.crashed){ loadStep(STEP); physics(STEP*.5); if(!S.crashed) physics(STEP*.5); }
   syncHeli(); gunStep(STEP); updateTroops(STEP); Ops.update(STEP);
 }
 let last=performance.now(), acc=0, envT=0, fpsE=60;
@@ -3527,15 +3591,26 @@ const Net={
   startDb(){
     const db=this.db;
     try{ db.collection('players').onSnapshot(function(snap){ const m=new Map(); snap.docs.forEach(function(d){ m.set(d.id,d.data()||{}); }); Net.players=m; Net.resolve(Array.from(m.keys())); Net.ui('players'); },function(){}); }catch(e){}
-    db.doc('players/'+this.uid).get().then(function(s){ if(s.exists) Net.mergeRemote(s.data()); Net.profReady=true; Net.push(true); }).catch(function(){ Net.profReady=true; });
     Prof.on(function(){ Net.schedulePush(); });
+    (async function(){
+      try{ const s=await db.doc('players/'+Net.uid).get(); if(s.exists) Net.mergeRemote(s.data()); }catch(e){}
+      let seen=!window.__fetchOwn;
+      if(!seen){ let ok=false; try{ ok=await window.__mqWaitOk(9000); }catch(e){} if(ok){ let b=null; try{ b=await window.__fetchOwn(); }catch(e){} if(b) Net.mergeRemote(b); seen=true; } }
+      Net.profReady=seen||Net.hasProgress(); if(Net.profReady) Net.push(true);   // a pristine profile is published only after the broker was asked first
+    })();
   },
-  mergeRemote(r){
-    const d=Prof.d; (r.unlocked||[]).forEach(function(u){ if(d.unlocked.indexOf(u)<0&&VEH[u]) d.unlocked.push(u); });
-    if((r.tot||0)>=d.tot){ ['pts','tot','rating','w','l','k','dth'].forEach(function(k){ if(typeof r[k]==='number') d[k]=r[k]; }); if(Array.isArray(r.hist)) d.hist=r.hist; if(Array.isArray(r.friends)) d.friends=r.friends; if(Array.isArray(r.ign)) d.ign=r.ign; }
-    else { (r.friends||[]).forEach(function(f){ if(d.friends.indexOf(f)<0) d.friends.push(f); }); }
+  hasProgress(){ const d=Prof.d; return d.tot>200||d.w>0||d.l>0||d.friends.length>0||d.unlocked.length>1||d.hist.length>0; },
+  mergeRemote(r){   // monotonic merge: counters take the max, lists are unions, so no older/blank record can erase progress
+    const d=Prof.d, before=JSON.stringify(d), num=function(x){ return (typeof x==='number'&&isFinite(x))?x:0; }, str=function(a){ return (Array.isArray(a)?a:[]).filter(function(x){ return typeof x==='string'&&x.length<=40; }); };
+    str(r.unlocked).forEach(function(u){ if(d.unlocked.indexOf(u)<0&&VEH[u]) d.unlocked.push(u); });
+    const spent=Math.max(0,d.tot-d.pts,num(r.tot)-num(r.pts));
+    if(num(r.w)+num(r.l)>d.w+d.l&&typeof r.rating==='number') d.rating=r.rating;
+    ['w','l','k','dth','tot'].forEach(function(k){ d[k]=Math.max(d[k]||0,num(r[k])); }); d.pts=Math.max(0,d.tot-spent);
+    const mine=d.ign.slice(); d.friends=d.friends.concat(str(r.friends).filter(function(f){ return d.friends.indexOf(f)<0&&mine.indexOf(f)<0; }));
+    str(r.ign).forEach(function(i){ if(d.ign.indexOf(i)<0&&d.friends.indexOf(i)<0) d.ign.push(i); });
+    const seen={}, h=[]; d.hist.concat(Array.isArray(r.hist)?r.hist:[]).forEach(function(x){ if(!x||typeof x!=='object') return; const k=x.t+'|'+x.o; if(!seen[k]){ seen[k]=1; h.push(x); } }); h.sort(function(p,q){ return (p.t||0)-(q.t||0); }); d.hist=h.slice(-20);
     if(!Prof.owns(d.veh)) d.veh='uh60ja';
-    Prof.save();
+    if(JSON.stringify(d)!==before) Prof.save();
   },
   schedulePush(){ if(!this.db||!this.uid||!this.canWrite||!this.profReady) return; clearTimeout(this.pt); this.pt=setTimeout(function(){ Net.push(); },1500); },
   async push(force){
@@ -3933,6 +4008,9 @@ const OnlineUI={
     $('ol-me').innerHTML=(id?avatarOf(id):'<img alt="" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 fill=%27%23333%27/%3E%3C/svg%3E">')+
       '<div><div class="nm">'+esc(id?Net.nm(id):'ゲスト（オフライン）')+'</div><div class="st"><span>'+(on?'<b style="color:#6fe07a">● ONLINE</b>':Net.state==='connecting'?'接続中…':'○ OFFLINE')+'</span><span>レート '+d.rating+'</span><span>'+d.pts+' pt</span><span>'+d.w+'勝 '+d.l+'敗</span><span>機体 '+esc(VEH[d.veh].name)+'</span></div></div>';
     $('ol-note').textContent=Net.note||''; if(window.__logout&&!$('ol-out')){ const b=document.createElement('button'); b.id='ol-out'; b.className='obtn sec sm'; b.textContent='ログアウト'; b.onclick=function(){ if(confirm('ログアウトしますか？（データはこの端末とアカウントに保存されています）')) window.__logout(); }; $('ol-note').parentNode.insertBefore(b,$('ol-note').nextSibling); }
+    (function(){ const add=function(id,tx,fn){ if($(id)) return; const b=document.createElement('button'); b.id=id; b.className='obtn sec sm'; b.textContent=tx; b.onclick=fn; $('ol-note').parentNode.insertBefore(b,$('ol-note').nextSibling); };
+      add('ol-imp','バックアップ読込',function(){ const i=document.createElement('input'); i.type='file'; i.accept='.json,application/json'; i.onchange=function(){ const f=i.files[0]; if(!f) return; f.text().then(function(tx){ try{ const o=JSON.parse(tx); Net.mergeRemote(o.d||o); Net.push(true); toast('バックアップを統合しました'); }catch(e){ toast('読み込めませんでした'); } }); }; i.click(); });
+      add('ol-exp','バックアップ保存',function(){ const bl=new Blob([JSON.stringify({app:'uh60ja',uid:Net.uid,t:Date.now(),d:Prof.d})],{type:'application/json'}), a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='heli-save-'+(window.__standalone?window.__standalone.pn:'me')+'.json'; a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); },4000); }); })();
   },
   build(){
     const me=this; this.meCard();
@@ -4042,6 +4120,7 @@ const OnlineUI={
   const _sp=setPause; setPause=function(v){ _sp(v); $('p-restart').hidden=Net.live(); };
   pill();
 })();
+window.__mergeOwn=function(c){ Net.mergeRemote(c); if(!Net.profReady){ Net.profReady=true; Net.push(true); } };
 // initial scene: parked at the home pad, slow orbit behind the briefing
 setBrief(true); S.tod=17.4; S.weather='clear'; applySettings(); resetHeli(); S.started=false; updateWind(0); updateEnv(); syncButtons();
 requestAnimationFrame(frame);
